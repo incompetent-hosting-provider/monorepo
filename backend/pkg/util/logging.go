@@ -12,7 +12,7 @@ import (
 )
 
 // Parse CMD flags and configure logger accordingly
-func Init_logger() {
+func InitLogger() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	debug := flag.Bool("debug", false, "sets log level to debug")

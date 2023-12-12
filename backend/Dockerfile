@@ -38,4 +38,7 @@ RUN chmod +x /app/ihp-backend
 
 USER $USER 
 
+ENV GIN_MODE=release
+ENV PORT=8081
+
 ENTRYPOINT /app/ihp-backend
