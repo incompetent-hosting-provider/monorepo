@@ -76,3 +76,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,linux,windows
+
+# Exclude docker compose data dirs
+
+docker
+# Keep gitkeep so folder always exists upon cloning
+!docker/.gitkeep
