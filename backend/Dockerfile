@@ -1,5 +1,5 @@
 # -- BUILD STAGE --
-FROM golang:1.21.4 as BUILD 
+FROM golang:1.21.4-alpine3.18 as BUILD 
 
 WORKDIR /build
 
@@ -31,11 +31,14 @@ RUN adduser \
     "$USER"
 
 # Copy build with permissions
-COPY --from=BUILD --chown=$USER:$USER /build/ihp-backend .
+COPY --from=BUILD --chown=$USER:$USER /build/ihp-backend /app/ihp-backend 
 
 # Ensure that backend can be run
 RUN chmod +x /app/ihp-backend
 
 USER $USER 
 
-ENTRYPOINT /app/ihp-backend
+ENV GIN_MODE=release
+ENV PORT=8081
+
+CMD ["/app/ihp-backend"]
