@@ -1,6 +1,8 @@
 package endpoints
 
 import (
+	"incompetent-hosting-provider/backend/pkg/auth"
+	"incompetent-hosting-provider/backend/pkg/payment"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,9 +25,12 @@ func configureMiddleWares(ginEngine *gin.Engine) {
 
 func configureGetEndpoints(ginEngine *gin.Engine) {
 	log.Info().Msg("Setting up GET endpoints")
+
 	ginEngine.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "OK",
 		})
 	})
+
+	ginEngine.GET("/payment", auth.AuthMiddleware, payment.CreditFetchHandler)
 }
