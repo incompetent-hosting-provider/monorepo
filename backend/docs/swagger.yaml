@@ -1,0 +1,44 @@
+definitions:
+  payment.BalanceResponse:
+    properties:
+      balance:
+        type: integer
+    type: object
+  util.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /payment:
+    get:
+      description: Get current user balance
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/payment.BalanceResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user balance
+      tags:
+      - payment
+securityDefinitions:
+  BearerAuth:
+    description: Auth token security
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

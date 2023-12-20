@@ -3,7 +3,12 @@ FROM golang:1.21.4-alpine3.18 as BUILD
 
 WORKDIR /build
 
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
 COPY . .
+
+# Build swagger
+RUN swag init
 
 RUN go build -o ihp-backend
 

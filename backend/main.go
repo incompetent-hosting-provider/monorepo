@@ -9,6 +9,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Swagger definitions
+
+//	@securityDefinitions.apikey BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Auth token security
+
 func main() {
 	// Load env
 	godotenv.Load()

@@ -12,3 +12,12 @@ To run the resulting executable
 '''sh
 ./main [-debug] [-pretty-logs]
 '''
+
+## Swagger/OpenAPI
+
+For swagger use [SWAG](https://github.com/swaggo/swag).
+
+After updating the swagger definition run 
+```sh
+swag init
+```
