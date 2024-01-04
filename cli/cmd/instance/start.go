@@ -1,4 +1,4 @@
-package authentication
+package instance
 
 import (
 	"fmt"
@@ -6,18 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Logout Command
+// Instances Start Command
 //
-// Allows the user to logout of the IHP CLI
-var LogoutCmd = &cobra.Command{
-	Use:   "logout",
+// Allows the user to start an instance
+var StartCmd = &cobra.Command{
+	Use:   "start",
 	Short: "Add short description", // TODO: Add short description
 	Long: "Add long description", // TODO: Add long description
 	Run: func(cmd *cobra.Command, args []string) {
-		logout()
-		fmt.Println("You are now logged out")
+		fmt.Println("'ihp instance start' called")
 	},
 }
 
-func init() {
-}
+func init() {}
