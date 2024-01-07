@@ -1,6 +1,6 @@
 module incompetent-hosting-provider/backend
 
-go 1.21.4
+go 1.21
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
