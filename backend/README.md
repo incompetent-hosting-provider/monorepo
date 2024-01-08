@@ -21,3 +21,10 @@ After updating the swagger definition run
 ```sh
 swag init
 ```
+
+## Tests
+
+To run tests use 
+```sh
+go test ./...
+```
