@@ -4,17 +4,18 @@ Temporary definition - subject to change.
 
 **Note**: JWT token in Authorization Header in format
 
-"Authorization": "Bearer <jwt>"   
+"Authorization": "Bearer <jwt>"
 
 Error responses:
 
 ```json
 {
-    "error":"This went wrong because abc"
+  "error": "This went wrong because abc"
 }
 ```
 
 Instance object:
+
 ```json
 {
     "type": "custom"|"preset",
@@ -25,10 +26,11 @@ Instance object:
         "version": "12.3"
     },
     "status": "RUNNING" | "PENDING" | "TERMINATED"
-}   
+}
 ```
 
 Instance object detailed:
+
 ```json
 {
     ...instance object,
@@ -39,32 +41,46 @@ Instance object detailed:
 }
 ```
 
-## Account 
+## Account
+
+GET `/user/`
+
+Response:
+
+```
+{
+    "email": "user@email.com",
+    "balance": 1000,
+}
+```
 
 GET `/user/balance`
 
 Response:
+
 ```json
 {
-    "balance": 1000
+  "balance": 1000
 }
 ```
 
---- 
+---
 
 POST `/user/balance`
 
 Body:
+
 ```json
 {
-    "amount": 1000
+  "amount": 1000
 }
 ```
 
 Response:
+
 ```json
 {
-    "balance": 1000
+  "balance": 1000
 }
 ```
 
@@ -73,9 +89,11 @@ Response:
 GET `/instances`
 
 query parameter:
+
 - status = "RUNNING" | "PENDING" | "TERMINATED" (optional)
 
 Response:
+
 ```json
 {
     "instances":[
@@ -89,6 +107,7 @@ Response:
 GET `/instances/<id>`
 
 Response:
+
 ```json
 detailed instance object
 ```
@@ -98,18 +117,21 @@ detailed instance object
 POST `/instances/preset`
 
 Body:
+
 ```json
 {
-    "preset": "<preset Id>",
-    "name": "my user defined name",
-    "description?": "description"
+  "preset": "<preset Id>",
+  "name": "my user defined name",
+  "description?": "description"
 }
 ```
+
 => 202
 Response
+
 ```json
 {
-    "id": "dasdhjsk"
+  "id": "dasdhjsk"
 }
 ```
 
@@ -118,6 +140,7 @@ Response
 POST `/instances/custom`
 
 Body:
+
 ```json
 {
     "name": "hello",
@@ -136,33 +159,33 @@ Body:
 
 => 202
 Response
+
 ```json
 {
-    "id": "dasdhjsk"
+  "id": "dasdhjsk"
 }
 ```
 
---- 
+---
 
 DELETE `/instances/<id>`
 
 => 202
-
 
 ## Service
 
 GET `/service/available-presets`
 
 Response:
+
 ```json
 {
-    "presets":[
-        {
-            "name": "hello",
-            "id": "myid",
-            "description": "Hello I am a mysql instance"
-        }
-    ]
+  "presets": [
+    {
+      "name": "hello",
+      "id": "myid",
+      "description": "Hello I am a mysql instance"
+    }
+  ]
 }
 ```
-
