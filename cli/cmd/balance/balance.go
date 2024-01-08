@@ -19,5 +19,6 @@ var BalanceCmd = &cobra.Command{
 }
 
 func init() {
-	BalanceCmd.AddCommand(addCmd)
+	// Add subcommands
+	BalanceCmd.AddCommand(purchaseCmd)
 }

@@ -17,5 +17,3 @@ var LogoutCmd = &cobra.Command{
 		fmt.Println("'ihp logout' called")
 	},
 }
-
-func init() {}

@@ -17,5 +17,3 @@ var LoginCmd = &cobra.Command{
 		fmt.Println("'ihp login' called")
 	},
 }
-
-func init() {}

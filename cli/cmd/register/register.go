@@ -17,5 +17,3 @@ var RegisterCmd = &cobra.Command{
 		fmt.Println("'ihp register' called")
 	},
 }
-
-func init() {}

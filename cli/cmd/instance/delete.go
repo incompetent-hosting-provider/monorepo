@@ -17,5 +17,3 @@ var DeleteCmd = &cobra.Command{
 		fmt.Println("'ihp instance delete' called")
 	},
 }
-
-func init() {}
