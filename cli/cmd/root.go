@@ -7,6 +7,7 @@ import (
 	"cli/cmd/login"
 	"cli/cmd/logout"
 	"cli/cmd/register"
+	"cli/internal/services/authentication"
 	"fmt"
 	"os"
 
@@ -24,7 +25,14 @@ var rootCmd = &cobra.Command{
 	Short: "Add short description", // TODO: Add short description
 	Long: "Add long description", // TODO: Add long description
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("'ihp' called")
+		sessionToken, err := authentication.GetSessionToken()
+		if err != nil {
+			fmt.Println("Something went wrong while getting the session token after login")
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		fmt.Println("Session token: " + sessionToken)
 	},
 }
 
