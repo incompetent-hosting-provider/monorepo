@@ -1,34 +1,46 @@
 package cmd
 
 import (
-	"cli/cmd/authentication"
+	"cli/cmd/balance"
+	"cli/cmd/instance"
+	"cli/cmd/instances"
+	"cli/cmd/login"
+	"cli/cmd/logout"
+	"cli/cmd/register"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// The IHP CLI root command
+//
+// This command is the root command for the IHP CLI.
+// If called without any subcommands, it will print
+// an overview about the current user, their balance
+// and their running instances.
 var rootCmd = &cobra.Command{
 	Use:   "ihp",
 	Short: "Add short description", // TODO: Add short description
 	Long: "Add long description", // TODO: Add long description
 	Run: func(cmd *cobra.Command, args []string) {
-
+		fmt.Println("'ihp' called")
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+func init() {
+	rootCmd.AddCommand(balance.BalanceCmd)
+	rootCmd.AddCommand(instance.InstanceCmd)
+	rootCmd.AddCommand(instances.InstancesCmd)
+	rootCmd.AddCommand(login.LoginCmd)
+	rootCmd.AddCommand(logout.LogoutCmd)
+	rootCmd.AddCommand(register.RegisterCmd)
+}
+
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func init() {
-	rootCmd.AddCommand(authentication.LoginCmd)
-	rootCmd.AddCommand(authentication.LogoutCmd)
-	rootCmd.AddCommand(authentication.RegisterCmd)
 }
 
