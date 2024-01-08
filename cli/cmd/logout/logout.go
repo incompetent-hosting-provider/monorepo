@@ -25,5 +25,3 @@ var LogoutCmd = &cobra.Command{
 		fmt.Println("Logout successful!")
 	},
 }
-
-func init() {}

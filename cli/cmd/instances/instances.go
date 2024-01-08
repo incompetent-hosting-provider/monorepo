@@ -17,5 +17,3 @@ var InstancesCmd = &cobra.Command{
 		fmt.Println("'ihp instances' called")
 	},
 }
-
-func init() {}

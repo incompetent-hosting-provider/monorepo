@@ -17,5 +17,3 @@ var StopCmd = &cobra.Command{
 		fmt.Println("'ihp instance stop' called")
 	},
 }
-
-func init() {}
