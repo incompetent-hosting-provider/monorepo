@@ -16,6 +16,36 @@ When developing one of the services the corresponding components container can b
 docker compose up -d --scale=<service name>=0
 ```
 
+## Keycloak
+
+### Setup
+Make sure you have Docker installed.
+
+### Access Keycloak Admin Interface
+Once the containers are running, access the Keycloak Admin interface using a web browser. The default address is http://localhost:8080.
+
+### User credentials
+
+<details>
+<summary>Admin</summary>
+To log in to the Keycloak Admin interface use the default admin credentials:
+
+Username: admin\
+Password: admin
+</details>
+
+<details>
+<summary>Test users</summary>
+When docker compose is started, a realm containing three test users is loaded:
+
+- test-user-1
+- test-user-2
+- test-user-3
+
+All these test users use a default password "Test123"
+</details>
+
+
 ## Additional
 
 ## Ports
