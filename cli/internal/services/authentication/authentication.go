@@ -1,35 +1,87 @@
 package authentication
 
 import (
+	"cli/internal/services/utils"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
-const (
-	fileName = "session"
-)
-
+// Authentication tokens.
 type Authentication struct {
 	SessionToken string `json:"access_token,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
+
+const (
+	// The name of the file where the session and refresh token are stored.
+	fileName = "session"
+)
+
+var (
+	// The Keycloak Configuration
+	// TODO: Read this from a config file or environment variables
+	keycloakConfig = KeycloakConfig{
+		URL: "http://localhost:8080",
+		Realm: "ihp-realm",
+		ClientId: "ihp-cli",
+	}
+
+	// The Embedded Server Configuration
+	// TODO: Read this from a config file or environment variables
+	embeddedServerConfig = utils.EmbeddedServerConfig{
+		Port: 3000,
+		CallbackPath: "/sso-cb",
+	}
+)
 
 // Starts the login process.
 // This will open the browser and redirect the user to keycloak.
 // After the user logged in, the session and refresh token will be saved.
 // TODO: If the user is already logged in, the login process will be skipped.
 func Login() error {
-	// Pretend we getting a session and refresh token from keycloak
-	sessionToken:= "sessionToken"
-	refreshToken:= "refreshToken"
-
-	tokens := Authentication{	
-		SessionToken: sessionToken,
-		RefreshToken: refreshToken,
+	// Open the browser and redirect the user to the internal server
+	if err := utils.OpenBrowser(keycloakConfig.getLoginURL(embeddedServerConfig.CallbackURL())); err != nil {
+		return fmt.Errorf("failed to open browser: %w", err)
 	}
 
-	return saveTokens(tokens);
+	// Wait for the embedded server to receive the callback
+	var asyncError error
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	// Start the embedded server
+	embeddedServerConfig.StartServer(func(w http.ResponseWriter, r *http.Request) {
+		// Get the autorization code from the query parameters
+		code := r.URL.Query().Get("code")
+
+		// Exchange the code for a session and refresh token
+	 	auth, err := keycloakConfig.performTokenExchangeRequest(code, embeddedServerConfig.CallbackURL())
+		if err != nil {
+			fmt.Fprintf(w, "Login failed! Return to the CLI to see further details...")
+			asyncError = fmt.Errorf("failed to exchange code for token: %w", err)
+			wg.Done()
+			return
+		}
+
+		// Save the authentication
+		if err := saveTokens(auth); err != nil {
+			asyncError = fmt.Errorf("failed to save tokens: %w", err)
+			wg.Done()
+			return
+		}
+
+		// Inform the user to close the browser window
+		fmt.Fprintf(w, "Login successful! You can close this window now.")
+		wg.Done()
+	})
+
+	// Wait for the embedded server to receive the callback
+	wg.Wait()
+	return asyncError
 }
 
 // Starts the registration process.
