@@ -44,7 +44,7 @@ var (
 // TODO: If the user is already logged in, the login process will be skipped.
 func Login() error {
 	// Open the browser and redirect the user to the internal server
-	if err := utils.OpenBrowser(keycloakConfig.getLoginURL(embeddedServerConfig.CallbackURL())); err != nil {
+	if err := utils.OpenBrowser(keycloakConfig.getLoginURL("http://" + embeddedServerConfig.CallbackURL())); err != nil {
 		return fmt.Errorf("failed to open browser: %w", err)
 	}
 
@@ -59,7 +59,7 @@ func Login() error {
 		code := r.URL.Query().Get("code")
 
 		// Exchange the code for a session and refresh token
-	 	auth, err := keycloakConfig.performTokenExchangeRequest(code, embeddedServerConfig.CallbackURL())
+	 	auth, err := keycloakConfig.performTokenExchangeRequest(code, "http://" + embeddedServerConfig.CallbackURL())
 		if err != nil {
 			fmt.Fprintf(w, "Login failed! Return to the CLI to see further details...")
 			asyncError = fmt.Errorf("failed to exchange code for token: %w", err)

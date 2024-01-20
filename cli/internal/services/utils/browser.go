@@ -25,7 +25,7 @@ func (c EmbeddedServerConfig) ServerURL() string {
 
 // Returns the URL of the Authentication Callback Endpoint.
 func (c EmbeddedServerConfig) CallbackURL() string {
-	return fmt.Sprintf("http://%s%s", c.ServerURL(), c.CallbackPath)
+	return fmt.Sprintf("%s%s", c.ServerURL(), c.CallbackPath)
 }
 
 // Starts the embedded server.
