@@ -47,19 +47,7 @@ func getExampleEngine(raw *rsa.PrivateKey) (*gin.Engine, jwk.Key) {
 	return ginEngine, key
 }
 
-func TestMiddleWareWithNoHeader(t *testing.T) {
-	// ARRANGE
-	g, _ := getExampleEngine(nil)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/", nil)
-	// ACT
-	g.ServeHTTP(w, req)
-	// ARRANGE
-	if w.Code != 401 {
-		t.Fatalf(`Want %d, received %d`, 401, w.Code)
-	}
-}
-
+// Positive Tests
 func TestWithValidJWT(t *testing.T) {
 	// ARRANGE
 	raw, _ := rsa.GenerateKey(rand.Reader, 2048)
@@ -86,6 +74,20 @@ func TestWithValidJWT(t *testing.T) {
 	// ARRANGE
 	if w.Code != 200 {
 		t.Fatalf(`Want %d, received %d`, 200, w.Code)
+	}
+}
+
+// Negative Tests
+func TestMiddleWareWithNoHeader(t *testing.T) {
+	// ARRANGE
+	g, _ := getExampleEngine(nil)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/", nil)
+	// ACT
+	g.ServeHTTP(w, req)
+	// ARRANGE
+	if w.Code != 401 {
+		t.Fatalf(`Want %d, received %d`, 401, w.Code)
 	}
 }
 
