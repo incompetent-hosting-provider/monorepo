@@ -1,8 +1,8 @@
 module incompetent-hosting-provider/backend
 
-go 1.21.5
+go 1.21
 
-toolchain go1.21.6
+toolchain go1.21
 
 require (
 	github.com/MicahParks/keyfunc/v3 v3.2.3
