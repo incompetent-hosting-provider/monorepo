@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"incompetent-hosting-provider/backend/pkg/constants"
 	"incompetent-hosting-provider/backend/pkg/util"
@@ -32,6 +33,15 @@ func GetAuthMiddleware() AuthMiddleware {
 	return AuthMiddleware{JWKS: jwks}
 }
 
+func getKeyFromHeader(claim jwt.MapClaims, key string) (string, error) {
+	val, ok := claim["foo"]
+	// If the key exists
+	if ok {
+		return fmt.Sprint(val), nil
+	}
+	return "", errors.New("JWT claim did not contain expected key")
+}
+
 func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
 	log.Debug().Msg("Request passed auth middleware")
 
@@ -42,6 +52,7 @@ func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
 	token = strings.TrimPrefix(token, "Bearer ")
 
 	if token == "" {
+		fmt.Print("no token")
 		util.ThrowUnauthorizedException(c, "Unauthorized")
 		return
 	}
@@ -55,9 +66,15 @@ func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
 	}
 
 	if claims, ok := parsed_token.Claims.(jwt.MapClaims); ok {
-		sub := fmt.Sprint(claims["sub"])
-		email := fmt.Sprint(claims["email"])
-		log.Warn().Msgf("%v\n%v", email, sub)
+
+		if claims["sub"] == nil || claims["email"] == nil {
+			log.Warn().Msg("JWT without expected claims reported. This could mean that someone is tampering with JWTs")
+			util.ThrowInternalServerErrorException(c, "JWT claim did not include expected claims")
+		}
+
+		sub := fmt.Sprintf("%v", claims["sub"])
+		email := fmt.Sprintf("%v", claims["email"])
+
 		c.Request.Header.Add(constants.USER_ID_HEADER, sub)
 		c.Request.Header.Add(constants.USER_EMAIL_HEADER, email)
 	} else {
