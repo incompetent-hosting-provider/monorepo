@@ -1,0 +1,52 @@
+name: cli
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - cli/**/*.go
+
+  pull_request:
+    branches: 
+      - main
+    paths:
+      - cli/**/*.go
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: cli 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: run tests
+        run: go test ./... 
+
+  build:
+    needs:
+      - test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: cli 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: build
+        # verbose build
+        run: go build -x -v 
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-build-${{ matrix.os }}
+          path: cli/cli
