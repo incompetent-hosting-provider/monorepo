@@ -6,12 +6,16 @@ on:
       - main
     paths:
       - backend/**/*.go
+      - backend/go.mod
+      - .github/workflows/**
 
   pull_request:
     branches: 
       - main
     paths:
       - backend/**/*.go
+      - .github/workflows/**
+      - backend/go.mod
 
 jobs:
   test:
