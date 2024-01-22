@@ -1,6 +1,6 @@
 module incompetent-hosting-provider/backend
 
-go 1.21
+go 1.21.5
 
 toolchain go1.21.6
 

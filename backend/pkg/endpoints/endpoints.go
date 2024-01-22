@@ -3,6 +3,7 @@ package endpoints
 import (
 	"incompetent-hosting-provider/backend/pkg/auth"
 	"incompetent-hosting-provider/backend/pkg/payment"
+	"incompetent-hosting-provider/backend/pkg/user"
 
 	docs "incompetent-hosting-provider/backend/docs"
 	"net/http"
@@ -30,6 +31,7 @@ func configureMiddleWares(ginEngine *gin.Engine) {
 }
 
 func configureGetEndpoints(ginEngine *gin.Engine) {
+	authMiddleware := auth.GetAuthMiddleware()
 	log.Info().Msg("Setting up GET endpoints")
 
 	ginEngine.GET("/health", func(c *gin.Context) {
@@ -38,7 +40,8 @@ func configureGetEndpoints(ginEngine *gin.Engine) {
 		})
 	})
 
-	ginEngine.GET("/payment", auth.AuthMiddleware, payment.CreditFetchHandler)
+	ginEngine.GET("/payment", authMiddleware.AuthFunc, payment.CreditFetchHandler)
+	ginEngine.GET("/user", authMiddleware.AuthFunc, user.UserFetchHandler)
 }
 
 func configureSwagger(ginEngine *gin.Engine) {

@@ -10,8 +10,9 @@ import (
 )
 
 func getExampleEngine() *gin.Engine {
+	a := auth.GetAuthMiddleware()
 	ginEngine := gin.New()
-	ginEngine.GET("/", auth.AuthMiddleware, func(c *gin.Context) {
+	ginEngine.GET("/", a.AuthFunc, func(c *gin.Context) {
 		c.String(200, "ok")
 	})
 	return ginEngine

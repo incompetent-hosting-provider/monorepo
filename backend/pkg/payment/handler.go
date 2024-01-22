@@ -1,6 +1,7 @@
 package payment
 
 import (
+	"incompetent-hosting-provider/backend/pkg/constants"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"net/http"
 
@@ -30,8 +31,8 @@ type BalanceResponse struct {
 // @Router /payment [get]
 func CreditFetchHandler(c *gin.Context) {
 	// Use header set by middleware
-	userId := c.GetHeader("user-id")
-	balance, err := getCurrentCredits(userId)
+	userId := c.GetHeader(constants.USER_ID_HEADER)
+	balance, err := GetCurrentCredits(userId)
 	if err != nil {
 		log.Warn().Msgf("Tried to fetch account balance but failed due to an error %s", err)
 		util.ThrowInternalServerErrorException(c, "Could not fetch balance. This is not an authorization issue.")
@@ -40,6 +41,6 @@ func CreditFetchHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, BalanceResponse{Balance: balance})
 }
 
-func getCurrentCredits(userId string) (int, error) {
+func GetCurrentCredits(userId string) (int, error) {
 	return 1000, nil
 }

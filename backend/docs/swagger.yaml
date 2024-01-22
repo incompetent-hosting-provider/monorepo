@@ -4,6 +4,13 @@ definitions:
       balance:
         type: integer
     type: object
+  user.UserResponse:
+    properties:
+      balance:
+        type: integer
+      email:
+        type: string
+    type: object
   util.ErrorResponse:
     properties:
       error:
@@ -35,6 +42,29 @@ paths:
       summary: Get user balance
       tags:
       - payment
+  /user:
+    get:
+      description: Get user info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user info
+      tags:
+      - user
 securityDefinitions:
   BearerAuth:
     description: Auth token security
