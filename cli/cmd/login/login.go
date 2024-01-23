@@ -24,11 +24,13 @@ var LoginCmd = &cobra.Command{
 
 		_, err := authentication.GetSessionToken()
 		if err != nil {
-			fmt.Println("Something went wrong while getting the session token after login")
+			fmt.Println("Something went wrong while getting the session token after login...")
+			fmt.Println("Please try again")
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		fmt.Println("Login successful! You can now use the IHP-CLI!.")
+		os.Exit(0)
 	},
 }
