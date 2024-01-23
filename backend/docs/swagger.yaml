@@ -37,6 +37,10 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get user balance
@@ -58,6 +62,10 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       security:

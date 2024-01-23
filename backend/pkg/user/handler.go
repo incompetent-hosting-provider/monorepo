@@ -28,6 +28,7 @@ type UserResponse struct {
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
+// @Failure						500 {object} util.ErrorResponse
 //
 // @Router /user [get]
 func UserFetchHandler(c *gin.Context) {

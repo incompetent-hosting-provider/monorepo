@@ -27,6 +27,7 @@ type BalanceResponse struct {
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
+// @Failure						500 {object} util.ErrorResponse
 //
 // @Router /payment [get]
 func CreditFetchHandler(c *gin.Context) {
