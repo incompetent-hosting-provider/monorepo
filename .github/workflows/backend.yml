@@ -6,12 +6,16 @@ on:
       - main
     paths:
       - backend/**/*.go
+      - backend/go.mod
+      - .github/workflows/**
 
   pull_request:
     branches: 
       - main
     paths:
       - backend/**/*.go
+      - .github/workflows/**
+      - backend/go.mod
 
 jobs:
   test:
@@ -22,7 +26,11 @@ jobs:
         working-directory: backend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.5' 
 
       - name: run tests
         run: go test ./... 
@@ -40,7 +48,11 @@ jobs:
         working-directory: backend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.5' 
       
       - name: build
         # verbose build
