@@ -108,7 +108,36 @@ func performTokenExchange(action string) error {
 // Starts the logout process.
 // This will delete the session and refresh token.
 func Logout() error {
-	return clearToken()
+	// Open the browser and redirect the user to the internal server
+	if err := utils.OpenBrowser(keycloakConfig.getLogoutURL(embeddedServerConfig.GetCallbackURL())); err != nil {
+		return fmt.Errorf("failed to open browser: %w", err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	var asyncErr error
+
+	http.HandleFunc(embeddedServerConfig.CallbackPath, func(w http.ResponseWriter, r *http.Request) {
+		// Delete the session and refresh token
+		if err := clearToken(); err != nil {
+			fmt.Fprintf(w, "Logout failed! Return to the CLI to see further details...")
+			asyncErr = fmt.Errorf("failed to delete tokens: %w", err)
+			wg.Done()
+			return
+		}
+
+		// Inform the user to close the browser window
+		fmt.Fprintf(w, "Logout successful! You can close this window now.")
+		wg.Done()
+	})
+
+	go func () {
+		http.ListenAndServe(embeddedServerConfig.GetServerURI(), nil)
+	}()
+
+	wg.Wait()
+
+	return asyncErr
 }
 
 // Returns the session token.
