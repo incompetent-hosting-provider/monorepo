@@ -11,9 +11,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var DynamoDBConn *dynamodb.Client
+var dynamoDbConn *dynamodb.Client
 
-func GetDynamoConn() error {
+func InitDbConn() error {
+
+	// If already initialized -> skip
+	if dynamoDbConn != nil {
+		return nil
+	}
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("eu-central-1"),
 		// load endpoint
@@ -34,19 +40,30 @@ func GetDynamoConn() error {
 
 	if err != nil {
 		log.Fatal().Msgf("unable to load SDK config, %v", err)
-		return nil
+		return err
 	}
 
 	// Using the Config value, create the DynamoDB client
-	dynamoDBConn := dynamodb.NewFromConfig(cfg)
+	newDbConn := dynamodb.NewFromConfig(cfg)
 
-	tablecount, err := getTableCount(dynamoDBConn)
+	tablecount, err := getTableCount(newDbConn)
 	if err != nil {
-		return nil
+		return err
 	}
 	log.Debug().Msgf("Connected to instance with %d tables.", tablecount)
 
-	DynamoDBConn = dynamoDBConn
-
+	dynamoDbConn = newDbConn
 	return nil
+}
+
+func GetDynamoConn() *dynamodb.Client {
+	if dynamoDbConn == nil {
+		err := InitDbConn()
+		// Panic this error as this means the db connection cannot be utilized
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return dynamoDbConn
 }

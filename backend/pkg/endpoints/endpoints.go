@@ -18,20 +18,21 @@ import (
 func ConfigureEndpoints() *gin.Engine {
 	log.Info().Msg("Setting up gin")
 	ginEngine := gin.New()
-	configureMiddleWares(ginEngine)
-	configureGetEndpoints(ginEngine)
+	authMiddleware := auth.GetAuthMiddleware()
+	configureGlobalMiddleWares(ginEngine)
+	configureGetEndpoints(ginEngine, authMiddleware)
+	configurePostEndpoints(ginEngine, authMiddleware)
 	configureSwagger(ginEngine)
 	return ginEngine
 }
 
-func configureMiddleWares(ginEngine *gin.Engine) {
+func configureGlobalMiddleWares(ginEngine *gin.Engine) {
 	log.Info().Msg("Setting up middlewares")
 	// Add recovery middleware to stop errors from oozing out
 	ginEngine.Use(gin.Recovery())
 }
 
-func configureGetEndpoints(ginEngine *gin.Engine) {
-	authMiddleware := auth.GetAuthMiddleware()
+func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
 	log.Info().Msg("Setting up GET endpoints")
 
 	ginEngine.GET("/health", func(c *gin.Context) {
@@ -42,6 +43,12 @@ func configureGetEndpoints(ginEngine *gin.Engine) {
 
 	ginEngine.GET("/payment", authMiddleware.AuthFunc, payment.CreditFetchHandler)
 	ginEngine.GET("/user", authMiddleware.AuthFunc, user.UserFetchHandler)
+}
+
+func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
+
+	log.Info().Msg("Setting up POST endpoints")
+	ginEngine.POST("/payment", authMiddleware.AuthFunc, payment.ChangeCreditHandler)
 }
 
 func configureSwagger(ginEngine *gin.Engine) {

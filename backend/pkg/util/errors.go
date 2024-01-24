@@ -18,6 +18,10 @@ func ThrowUnauthorizedException(c *gin.Context, message string) {
 	throwError(c, http.StatusUnauthorized, message)
 }
 
+func ThrowBadRequestException(c *gin.Context, message string) {
+	throwError(c, http.StatusBadRequest, message)
+}
+
 func throwError(c *gin.Context, statuscode int, message string) {
 	c.JSON(statuscode, ErrorResponse{Error: message})
 	c.Abort()
