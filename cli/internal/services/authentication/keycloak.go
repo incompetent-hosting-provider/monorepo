@@ -58,14 +58,11 @@ func (c KeycloakConfig) performTokenExchangeRequest(code string, redirect string
 		return Authentication{}, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var data map[string]interface{}
-	err = json.Unmarshal(respBody, &data)
+	var auth Authentication
+	err = json.Unmarshal(respBody, &auth)
 	if err != nil {
 		return Authentication{}, fmt.Errorf("failed to parse JSON response: %w", err)
 	}
 
-	return Authentication{
-		SessionToken: data["access_token"].(string),
-		RefreshToken: data["refresh_token"].(string),
-	}, nil
+	return auth, nil
 }
