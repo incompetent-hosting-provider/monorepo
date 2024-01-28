@@ -2,6 +2,7 @@ package db_payment
 
 import (
 	"context"
+	"errors"
 	"incompetent-hosting-provider/backend/pkg/db"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"strconv"
@@ -102,4 +103,36 @@ func IncreaseBalance(userSub string, balanceDelta int) (int, error) {
 	}
 
 	return updatedBalance, nil
+}
+
+func GetUserBalance(userSub string) (int, error) {
+
+	// If in test run -> Skip and return dummy values
+	if util.IsTestRun() {
+		return 1000, nil
+	}
+
+	conn := db.GetDynamoConn()
+
+	param := dynamodb.GetItemInput{
+		Key:            map[string]types.AttributeValue{"UserSub": &types.AttributeValueMemberS{Value: userSub}},
+		TableName:      aws.String(TABLE_NAME),
+		ConsistentRead: aws.Bool(true),
+	}
+
+	var balance int
+	val, err := conn.GetItem(context.TODO(), &param)
+
+	// Is this ideal? I am not sure
+	if err != nil {
+		var notFoundEx *types.ResourceNotFoundException
+		// If user not in table -> Assume that user has never added currency yet i.e. has a current balance of zero
+		if errors.As(err, &notFoundEx) {
+			err = nil
+		}
+		balance = 0
+	} else {
+		balance, _ = strconv.Atoi(val.Item["Balance"].(*types.AttributeValueMemberN).Value)
+	}
+	return balance, err
 }

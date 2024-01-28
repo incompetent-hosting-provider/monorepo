@@ -55,3 +55,26 @@ func TestThrowUnauthorizedException(t *testing.T) {
 		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
 	}
 }
+
+func TestThrowNotFoundException(t *testing.T) {
+	// ARRANGE
+	g := gin.New()
+	err_want := "test not found exception"
+	code_want := 404
+	g.GET("/", func(ctx *gin.Context) {
+		util.ThrowNotFoundException(ctx, err_want)
+	})
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/", nil)
+	// ACT
+	g.ServeHTTP(w, req)
+	// ARRANGE
+	if w.Code != code_want {
+		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
+	}
+	var target map[string]string
+	json.NewDecoder(w.Result().Body).Decode(&target)
+	if target["error"] != err_want {
+		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
+	}
+}

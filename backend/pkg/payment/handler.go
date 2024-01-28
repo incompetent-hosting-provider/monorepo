@@ -40,8 +40,7 @@ func CreditFetchHandler(c *gin.Context) {
 	userId := c.GetHeader(constants.USER_ID_HEADER)
 	balance, err := GetCurrentCredits(userId)
 	if err != nil {
-		log.Warn().Msgf("Tried to fetch account balance but failed due to an error %s", err)
-		util.ThrowInternalServerErrorException(c, "Could not fetch balance. This is not an authorization issue.")
+		util.ThrowInternalServerErrorException(c, "Internal Server Error")
 		return
 	}
 	c.JSON(http.StatusOK, BalanceResponse{Balance: balance})
