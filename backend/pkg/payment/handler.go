@@ -47,6 +47,25 @@ func CreditFetchHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, BalanceResponse{Balance: balance})
 }
 
+// godoc
+// @Summary 					Increase user balance
+//
+// @Schemes
+// @Description 				Increase user balance
+// @Tags 						payment
+// @Produce 					json
+//
+// @Security					BearerAuth
+//
+// @Param request body payment.BalanceIncreaseBody true "query params"
+//
+// @Success 					200 {object} payment.BalanceResponse
+//
+// @Failure						401 {object} util.ErrorResponse
+// @Failure						404 {object} util.ErrorResponse
+// @Failure						500 {object} util.ErrorResponse
+//
+// @Router /payment [post]
 func ChangeCreditHandler(c *gin.Context) {
 
 	var updateRequest BalanceIncreaseBody

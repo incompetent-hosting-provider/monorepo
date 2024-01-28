@@ -21,7 +21,7 @@ func main() {
 	// Load env
 	godotenv.Load()
 	util.InitLogger()
-	err := db.GetDynamoConn()
+	err := db.InitDbConn()
 	if err != nil {
 		log.Fatal().Msgf("%s", err)
 		panic(err)

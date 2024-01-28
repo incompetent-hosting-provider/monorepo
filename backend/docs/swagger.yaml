@@ -1,4 +1,9 @@
 definitions:
+  payment.BalanceIncreaseBody:
+    properties:
+      amount:
+        type: integer
+    type: object
   payment.BalanceResponse:
     properties:
       balance:
@@ -44,6 +49,39 @@ paths:
       security:
       - BearerAuth: []
       summary: Get user balance
+      tags:
+      - payment
+    post:
+      description: Increase user balance
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/payment.BalanceIncreaseBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/payment.BalanceResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Increase user balance
       tags:
       - payment
   /user:

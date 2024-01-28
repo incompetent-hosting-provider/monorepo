@@ -20,6 +20,9 @@ require (
 )
 
 require (
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.8.4 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.4.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.3 // indirect
 	github.com/lestrrat-go/httprc v1.0.4 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 )
@@ -27,6 +30,7 @@ require (
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/MicahParks/jwkset v0.5.6 // indirect
+	github.com/aws/aws-sdk-go v1.50.3
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.10 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.9 // indirect
@@ -38,6 +42,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.26.6 // indirect
 	github.com/aws/smithy-go v1.19.0 // indirect
+	github.com/awsdocs/aws-doc-sdk-examples/gov2/dynamodb v0.0.0-20240124140945-a3b438bc482d
 	github.com/bytedance/sonic v1.10.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect

@@ -14,20 +14,64 @@ import (
 const TABLE_NAME string = "payment"
 
 type PaymentTable struct {
-	UserSub        string
-	CurrentBalance int
+	UserSub string
+	Balance int
+}
+
+func init() {
+	doesTableExist, err := db.DoesTableExist(TABLE_NAME)
+
+	if err != nil {
+		panic("Could not fetch table status")
+	}
+
+	// if table already exists => we are done here
+	if doesTableExist {
+		log.Info().Msgf("Table %v is present", TABLE_NAME)
+		return
+	}
+
+	log.Info().Msgf("Table %v does not exist. Creating...", TABLE_NAME)
+
+	contents := []types.AttributeDefinition{
+		{
+			AttributeName: aws.String("UserSub"),
+			AttributeType: types.ScalarAttributeTypeS,
+		},
+	}
+
+	keySchema := []types.KeySchemaElement{
+		{
+			AttributeName: aws.String("UserSub"),
+			KeyType:       types.KeyTypeHash,
+		},
+	}
+
+	err = db.CreateTable(TABLE_NAME, contents, keySchema)
+
+	if err != nil {
+		log.Error().Msgf("Could not create table due to an error (%v)", err)
+	} else {
+		log.Debug().Msgf("Table %v was created.", TABLE_NAME)
+	}
+
 }
 
 func IncreaseBalance(userSub string, balanceDelta int) (int, error) {
+
+	log.Debug().Msg("Updating user balance")
 	conn := db.GetDynamoConn()
 
-	updateExpression := "SET balance = balance + :amount"
-	expressionAttributeValues := map[string]types.AttributeValue{":amount": &types.AttributeValueMemberN{Value: strconv.Itoa(balanceDelta)}}
+	updateExpression := aws.String("SET Balance = if_not_exists(Balance, :setValue) + :amount")
+	expressionAttributeValues := map[string]types.AttributeValue{
+		":amount":   &types.AttributeValueMemberN{Value: strconv.Itoa(balanceDelta)},
+		":setValue": &types.AttributeValueMemberN{Value: "0"},
+	}
 
 	updateItem := &dynamodb.UpdateItemInput{
 		TableName:                 aws.String(TABLE_NAME),
 		Key:                       map[string]types.AttributeValue{"UserSub": &types.AttributeValueMemberS{Value: userSub}},
-		UpdateExpression:          &updateExpression,
+		UpdateExpression:          updateExpression,
 		ExpressionAttributeValues: expressionAttributeValues,
 		ReturnValues:              types.ReturnValueAllNew,
 	}
@@ -38,12 +82,11 @@ func IncreaseBalance(userSub string, balanceDelta int) (int, error) {
 		return 0, err
 	}
 
-	updatedBalance, err := strconv.Atoi(updatedItem.Attributes["balance"].(*types.AttributeValueMemberN).Value)
+	updatedBalance, err := strconv.Atoi(updatedItem.Attributes["Balance"].(*types.AttributeValueMemberN).Value)
 
 	if err != nil {
 		log.Warn().Msgf("Could not parse return statement (%v)", err)
 	}
 
 	return updatedBalance, nil
-
 }
