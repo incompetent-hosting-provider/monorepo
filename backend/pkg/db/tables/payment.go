@@ -3,6 +3,7 @@ package db_payment
 import (
 	"context"
 	"incompetent-hosting-provider/backend/pkg/db"
+	"incompetent-hosting-provider/backend/pkg/util"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -19,6 +20,12 @@ type PaymentTable struct {
 }
 
 func init() {
+
+	// No setup needed in test run
+	if util.IsTestRun() {
+		return
+	}
+
 	doesTableExist, err := db.DoesTableExist(TABLE_NAME)
 
 	if err != nil {
@@ -58,6 +65,12 @@ func init() {
 }
 
 func IncreaseBalance(userSub string, balanceDelta int) (int, error) {
+
+	// If in test -> skip shenanigans with dynamoDB
+	// We do not test DynamoDb functionality/s3
+	if util.IsTestRun() {
+		return balanceDelta, nil
+	}
 
 	log.Debug().Msg("Updating user balance")
 	conn := db.GetDynamoConn()

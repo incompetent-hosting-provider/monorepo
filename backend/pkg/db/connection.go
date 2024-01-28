@@ -16,7 +16,8 @@ var dynamoDbConn *dynamodb.Client
 func InitDbConn() error {
 
 	// If already initialized -> skip
-	if dynamoDbConn != nil {
+	// If is test run -> skip
+	if dynamoDbConn != nil || util.IsTestRun() {
 		return nil
 	}
 
@@ -57,6 +58,7 @@ func InitDbConn() error {
 }
 
 func GetDynamoConn() *dynamodb.Client {
+	// This does not have a test guard, because this should never be reached if all other test guards have been placed properly
 	if dynamoDbConn == nil {
 		err := InitDbConn()
 		// Panic this error as this means the db connection cannot be utilized
