@@ -1,0 +1,64 @@
+name: cli
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - cli/**/*.go
+      - cli/go.mod
+      - .github/workflows/**
+
+  pull_request:
+    branches: 
+      - main
+    paths:
+      - cli/**/*.go
+      - cli/go.mod
+      - .github/workflows/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: cli 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.4' 
+
+      - name: run tests
+        run: go test ./... 
+
+  build:
+    needs:
+      - test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: cli 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.4' 
+      
+      - name: build
+        # verbose build
+        run: go build -x -v 
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-build-${{ matrix.os }}
+          path: cli/cli
