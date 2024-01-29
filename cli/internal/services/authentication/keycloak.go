@@ -16,7 +16,7 @@ type KeycloakConfig struct {
 	ClientId string `json:"client_id"`
 }
 
-// Returns the Authentication URL of the Keycloak Server.
+// Returns the Authentication URI of the Keycloak Server.
 func (c KeycloakConfig) getLoginURL(redirect string) string {
 	return fmt.Sprintf("%s/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_mode=query&response_type=code&scope=openid",
 		c.URL,
@@ -26,10 +26,32 @@ func (c KeycloakConfig) getLoginURL(redirect string) string {
 	)
 }
 
+// Returns the Registration URI of the Keycloak Server.
+func (c KeycloakConfig) getRegisterURL(redirect string) string {
+	return fmt.Sprintf("%s/realms/%s/protocol/openid-connect/registrations?client_id=%s&redirect_uri=%s&response_mode=query&response_type=code&scope=openid",
+		c.URL,
+		c.Realm,
+		c.ClientId,
+		redirect,
+	)
+}
+
+// Returns the Registration URI of the Keycloak Server.
+func (c KeycloakConfig) getLogoutURL(redirect string) string {
+	return fmt.Sprintf("%s/realms/%s/protocol/openid-connect/logout?client_id=%s&post_logout_redirect_uri=%s&response_mode=query&response_type=code&scope=openid",
+		c.URL,
+		c.Realm,
+		c.ClientId,
+		redirect,
+	)
+}
+
+// Returns the Token URI (used for Token Exchange) of the Keycloak Server.
 func (c KeycloakConfig) getTokenURL() string {
 	return fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token", c.URL, c.Realm)
 }
 
+// Performs the Token Exchange Request against the Keycloak Server.
 func (c KeycloakConfig) performTokenExchangeRequest(code string, redirect string) (Authentication, error) {
 	body := url.Values{}
 	body.Set("client_id", c.ClientId)
