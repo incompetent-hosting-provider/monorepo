@@ -5,7 +5,6 @@ import (
 	"incompetent-hosting-provider/backend/pkg/db"
 	"incompetent-hosting-provider/backend/pkg/endpoints"
 	"incompetent-hosting-provider/backend/pkg/util"
-	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
@@ -22,10 +21,10 @@ func main() {
 	// Load env
 	godotenv.Load()
 	util.InitLogger()
-	err := db.GetDynamoConn()
+	err := db.InitDbConn()
 	if err != nil {
 		log.Fatal().Msgf("%s", err)
-		os.Exit(1)
+		panic(err)
 	}
 	log.Info().Msg("Connected to DynamoDb")
 	log.Info().Msg("Starting Webserver...")

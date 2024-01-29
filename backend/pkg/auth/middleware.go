@@ -43,7 +43,7 @@ func getKeyFromHeader(claim jwt.MapClaims, key string) (string, error) {
 }
 
 func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
-	log.Debug().Msg("Request passed auth middleware")
+	log.Debug().Msg("Request entered auth middleware")
 
 	// Note: This is a temporary implementatio and will be replaced with keycloak integration
 	token := c.GetHeader("Authorization")
@@ -80,7 +80,10 @@ func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
 	} else {
 		log.Warn().Msg("Parsing claim failed")
 		util.ThrowUnauthorizedException(c, "Invalid token")
+		return
 	}
+
+	log.Debug().Msg("Request passed auth middleware")
 
 	c.Next()
 }

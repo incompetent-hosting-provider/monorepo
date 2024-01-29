@@ -14,8 +14,16 @@ func ThrowInternalServerErrorException(c *gin.Context, message string) {
 	throwError(c, http.StatusInternalServerError, message)
 }
 
+func ThrowNotFoundException(c *gin.Context, message string) {
+	throwError(c, http.StatusNotFound, message)
+}
+
 func ThrowUnauthorizedException(c *gin.Context, message string) {
 	throwError(c, http.StatusUnauthorized, message)
+}
+
+func ThrowBadRequestException(c *gin.Context, message string) {
+	throwError(c, http.StatusBadRequest, message)
 }
 
 func throwError(c *gin.Context, statuscode int, message string) {
