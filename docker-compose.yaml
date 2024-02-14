@@ -10,6 +10,7 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - ICHP_BACKEND_HOST=backend:8081
     command: start-dev --import-realm
     volumes:
       - ./keycloak/volume/keycloak.json:/opt/keycloak/data/import/keycloak.json
