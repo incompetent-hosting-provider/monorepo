@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"reflect"
 
-	tfenv "goterra/pkg/terraformEnvironment"
-
-	helper "goterra/pkg/helper"
+	"incompetent-hosting-provider/backend/pkg/terraform/helper"
+	tfenv "incompetent-hosting-provider/backend/pkg/terraform/terraformEnvironment"
 
 	log "github.com/rs/zerolog/log"
 )

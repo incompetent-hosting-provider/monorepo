@@ -2,11 +2,9 @@ package incompetenthostingprovider
 
 import (
 	"context"
-	"encoding/json"
+	"incompetent-hosting-provider/backend/pkg/terraform/helper"
 	"strconv"
 	"strings"
-
-	"goterra/pkg/helper"
 
 	tfexec "github.com/hashicorp/terraform-exec/tfexec"
 	tfjson "github.com/hashicorp/terraform-json"

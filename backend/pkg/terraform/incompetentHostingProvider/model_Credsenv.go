@@ -2,9 +2,9 @@ package incompetenthostingprovider
 
 import (
 	"encoding/json"
-	"goterra/pkg/helper"
+	"incompetent-hosting-provider/backend/pkg/terraform/helper"
 
-	tfenv "goterra/pkg/terraformEnvironment"
+	tfenv "incompetent-hosting-provider/backend/pkg/terraform/terraformEnvironment"
 
 	log "github.com/rs/zerolog/log"
 )

@@ -2,7 +2,7 @@ package incompetenthostingprovider
 
 import (
 	"context"
-	tfbin "goterra/pkg/terraformBinary"
+	tfbin "incompetent-hosting-provider/backend/pkg/terraform/terraformBinary"
 
 	tfexec "github.com/hashicorp/terraform-exec/tfexec"
 	tfjson "github.com/hashicorp/terraform-json"

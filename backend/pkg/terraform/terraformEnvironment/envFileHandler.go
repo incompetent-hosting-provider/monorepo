@@ -1,7 +1,7 @@
 package terraformenvironment
 
 import (
-	"goterra/pkg/helper"
+	"incompetent-hosting-provider/backend/pkg/terraform/helper"
 	"os"
 	"reflect"
 
