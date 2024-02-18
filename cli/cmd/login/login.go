@@ -1,7 +1,6 @@
 package login
 
 import (
-	"cli/cmd"
 	"cli/internal/authentication"
 	"cli/internal/utils"
 	"fmt"
@@ -9,14 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd.RootCmd.AddCommand(loginCmd)
-}
-
 // Login Command
 //
 // Allows the user to login to the IHP CLI using keycloak
-var loginCmd = &cobra.Command{
+var LoginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to the IHP CLI",
 	Long:  "Login to the IHP CLI via Keycloak",

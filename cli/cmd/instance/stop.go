@@ -6,10 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	instanceCmd.AddCommand(stopCmd)
-}
-
 // Instances Create Command
 //
 // Allows the user to stop an instance

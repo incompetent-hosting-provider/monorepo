@@ -6,10 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	balanceCmd.AddCommand(purchaseCmd)
-}
-
 // Purchase Command
 //
 // Allows the user to purchaseCmd more credits.

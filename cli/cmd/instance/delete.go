@@ -6,9 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	instanceCmd.AddCommand(deleteCmd)
-}
 
 // Instances Delete Command
 //

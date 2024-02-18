@@ -1,21 +1,24 @@
 package balance
 
 import (
-	"cli/cmd"
+	"cli/internal/authentication"
+	"cli/internal/backend"
+	"cli/internal/utils"
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	// Attach to root command
-	cmd.RootCmd.AddCommand(balanceCmd)
+	BalanceCmd.AddCommand(purchaseCmd)
 }
 
 // Balance Command
 //
 // Allows the user to check their current balance
-var balanceCmd = &cobra.Command{
+var BalanceCmd = &cobra.Command{
 	Use:   "balance",
 	Short: "Add short description", // TODO: Add short description
 	Long:  "Add long description",  // TODO: Add long description

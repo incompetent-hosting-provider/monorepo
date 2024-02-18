@@ -6,10 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	instanceCmd.AddCommand(createCmd)
-}
-
 // Instances Create Command
 //
 // Runs the create instance prompt so the user can create a new instance

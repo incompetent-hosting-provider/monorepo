@@ -1,8 +1,15 @@
 package cmd
 
 import (
+	"cli/cmd/balance"
+	"cli/cmd/instance"
+	"cli/cmd/instances"
+	"cli/cmd/login"
+	"cli/cmd/logout"
+	"cli/cmd/register"
 	"cli/internal/authentication"
 	"cli/internal/backend"
+	"cli/internal/utils"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -10,6 +17,16 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	RootCmd.AddCommand(balance.BalanceCmd)
+	RootCmd.AddCommand(instance.InstanceCmd)
+	RootCmd.AddCommand(instances.InstancesCmd)
+	RootCmd.AddCommand(login.LoginCmd)
+	RootCmd.AddCommand(logout.LogoutCmd)
+	RootCmd.AddCommand(register.RegisterCmd)
+}
+
 
 var (
 	//go:embed banner.txt
