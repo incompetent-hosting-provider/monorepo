@@ -50,7 +50,7 @@ var RootCmd = &cobra.Command{
 
 		tokens := authentication.GetCurrentAuthentication()
 		if tokens == nil {
-			displayNotLoggedInMessage()
+			utils.DisplayNotLoggedInMessage()
 			return
 		}
 
@@ -65,7 +65,7 @@ var RootCmd = &cobra.Command{
 				}
 
 				if newTokens == nil {
-					displaySessionExpiredMessage()
+					utils.DisplaySessionExpiredMessage()
 					return
 				}
 
@@ -83,16 +83,6 @@ var RootCmd = &cobra.Command{
 		fmt.Println("Welcome", userInfo.Email)
 		fmt.Println("Your balance is", userInfo.Balance)
 	},
-}
-
-func displayNotLoggedInMessage() {
-	fmt.Println("You are not logged in.")
-	fmt.Println("Please log in to continue.")
-}
-
-func displaySessionExpiredMessage() {
-	fmt.Println("Your session has expired and you have been logged out.")
-	fmt.Println("Please log in again to continue.")
 }
 
 func displayUnableToGetUserInfoMessage(err error) {
