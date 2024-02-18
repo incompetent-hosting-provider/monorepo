@@ -1,9 +1,9 @@
 package register
 
 import (
-	"cli/internal/services/authentication"
+	"cli/internal/authentication"
+	"cli/internal/utils"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -16,21 +16,43 @@ var RegisterCmd = &cobra.Command{
 	Short: "Register for the IHP CLI",
 	Long: "Register for the IHP CLI via keycloak",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := authentication.Register(); err != nil {
-			fmt.Println("Something went wrong while registering...")
-			fmt.Println(err)
-			os.Exit(1)
+		if auth, _ := authentication.GetCurrentAuthentication(); auth != nil {
+			// We don't handle the error since this means that we are unable
+			// to read the current authentication state. In this case we just
+			// assume that the user is not logged in.
+
+			fmt.Println("You are currently logged in. Please log out first!")
+			return
 		}
 
-		_, err := authentication.GetSessionToken()
+		server, err := utils.GetCallbackServer()
 		if err != nil {
-			fmt.Println("Something went wrong while getting the session token after registration...")
-			fmt.Println("Please try again!")
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Println("Failed to start a callback server to register. Please try again.")
+			return
+		}
+		defer server.Close()
+
+		result := make(chan error)
+		go authentication.PerformTokenExchange(server, result)
+
+		addr := server.Addr().String()
+		redirectURL := fmt.Sprintf("http://%s", addr)
+		url:= authentication.DefaultKeycloakConfig.GetRegisterURL(redirectURL)
+		
+		err = utils.OpenBrowser(url)
+		if err != nil {
+			fmt.Println("Failed to open the browser. Please open the following URL manually:")
+			fmt.Println(url)
 		}
 
-		fmt.Println("Registration successful! You can now use the IHP-CLI!.")
-		os.Exit(0)
+		err = <- result
+		if err != nil {
+			fmt.Println("Something went wrong during the login process.")
+			fmt.Println(err.Error())
+			fmt.Println("Please try again. If the problem persists, please contact the support.")
+		}
+		
+		fmt.Println("Successfully registered.")
+		fmt.Println("You can now use the IHP-CLI!.")
 	},
 }

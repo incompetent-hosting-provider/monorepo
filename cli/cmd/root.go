@@ -7,12 +7,26 @@ import (
 	"cli/cmd/login"
 	"cli/cmd/logout"
 	"cli/cmd/register"
-	"cli/internal/services/authentication"
+	_ "embed"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
+
+var (
+	//go:embed banner.txt
+	banner string
+)
+
+func init() {
+	rootCmd.AddCommand(balance.BalanceCmd)
+	rootCmd.AddCommand(instance.InstanceCmd)
+	rootCmd.AddCommand(instances.InstancesCmd)
+	rootCmd.AddCommand(login.LoginCmd)
+	rootCmd.AddCommand(logout.LogoutCmd)
+	rootCmd.AddCommand(register.RegisterCmd)
+}
 
 // The IHP CLI root command
 //
@@ -25,24 +39,9 @@ var rootCmd = &cobra.Command{
 	Short: "Add short description", // TODO: Add short description
 	Long: "Add long description", // TODO: Add long description
 	Run: func(cmd *cobra.Command, args []string) {
-		sessionToken, err := authentication.GetSessionToken()
-		if err != nil {
-			fmt.Println("Something went wrong while getting the session token after login")
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		fmt.Println("Session token: " + sessionToken)
+		fmt.Println(banner)
+		fmt.Println("Version: 0.1.0")
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(balance.BalanceCmd)
-	rootCmd.AddCommand(instance.InstanceCmd)
-	rootCmd.AddCommand(instances.InstancesCmd)
-	rootCmd.AddCommand(login.LoginCmd)
-	rootCmd.AddCommand(logout.LogoutCmd)
-	rootCmd.AddCommand(register.RegisterCmd)
 }
 
 func Execute() {
