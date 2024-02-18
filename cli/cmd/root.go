@@ -37,7 +37,7 @@ func init() {
 var rootCmd = &cobra.Command{
 	Use:   "ihp",
 	Short: "Add short description", // TODO: Add short description
-	Long: "Add long description", // TODO: Add long description
+	Long:  "Add long description",  // TODO: Add long description
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(banner)
 		fmt.Println("Version: 0.1.0")
@@ -50,4 +50,3 @@ func Execute() {
 		os.Exit(1)
 	}
 }
-

@@ -12,7 +12,7 @@ import (
 var BalanceCmd = &cobra.Command{
 	Use:   "balance",
 	Short: "Add short description", // TODO: Add short description
-	Long: "Add long description", // TODO: Add long description
+	Long:  "Add long description",  // TODO: Add long description
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("'ihp balance' called")
 	},

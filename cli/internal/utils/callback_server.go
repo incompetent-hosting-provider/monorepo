@@ -10,6 +10,6 @@ func GetCallbackServer() (*net.TCPListener, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to start a callback server: %w", err)
 	}
-	
+
 	return listener.(*net.TCPListener), nil
 }

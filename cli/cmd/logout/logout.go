@@ -14,9 +14,9 @@ import (
 var LogoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Log out of the IHP CLI",
-	Long: "Log out of the IHP CLI. This will clear your current session.",
+	Long:  "Log out of the IHP CLI. This will clear your current session.",
 	Run: func(cmd *cobra.Command, args []string) {
-		auth, err := authentication.GetCurrentAuthentication(); 
+		auth, err := authentication.GetCurrentAuthentication()
 		if auth == nil && err == nil {
 			fmt.Println("You are not logged in.")
 			return
@@ -42,7 +42,7 @@ var LogoutCmd = &cobra.Command{
 			fmt.Println(url)
 		}
 
-		err = <- result
+		err = <-result
 		if err != nil {
 			fmt.Println("Something went wrong during the logout process.")
 			fmt.Println(err.Error())

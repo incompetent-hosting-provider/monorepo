@@ -37,7 +37,7 @@ var LoginCmd = &cobra.Command{
 
 		addr := server.Addr().String()
 		redirectURL := fmt.Sprintf("http://%s", addr)
-		url:= authentication.DefaultKeycloakConfig.GetLoginURL(redirectURL)
+		url := authentication.DefaultKeycloakConfig.GetLoginURL(redirectURL)
 
 		err = utils.OpenBrowser(url)
 		if err != nil {
@@ -45,7 +45,7 @@ var LoginCmd = &cobra.Command{
 			fmt.Println(url)
 		}
 
-		err = <- result
+		err = <-result
 		if err != nil {
 			fmt.Println("Something went wrong during the login process.")
 			fmt.Println(err.Error())
