@@ -6,23 +6,57 @@ import (
 	"net/http"
 )
 
-func GetCurrentAuthentication() (*SessionTokens, error) {
+// Reads the tokens from the storage and returns them.
+// If no tokens are present, it will return nil.
+//
+// If an error occurs while reading the tokens, it tries to clear them
+// and assumes the user is not authenticated.
+func GetCurrentAuthentication() *SessionTokens {
 	tokens, err := readTokens()
 	if err != nil {
 		// Unable to read tokens, clear them and
 		// assume that the user was not logged in.
-		if clearErr := clearTokens(); clearErr != nil {
-			return nil, fmt.Errorf(
-				"failed to read tokens to get current authentication: %w."+
-					"Tried to clear tokens but failed aswell: %w", err, clearErr)
-		}
+		clearTokens()
+		return nil
+	}
 
+	return tokens
+}
+
+// Performs a token refresh request and saves the new tokens.
+// If the refresh token has expired, the tokens will be cleared and nil will be returned.
+func RefreshTokens() (*SessionTokens, error) {
+	tokens := GetCurrentAuthentication()
+	if tokens == nil {
 		return nil, nil
 	}
 
-	return tokens, nil
+	// Perform the token refresh request
+	newTokens, err := DefaultKeycloakConfig.performTokenRefreshRequest(tokens.RefreshToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to refresh tokens: %w", err)
+	}
+
+	// If the new tokens are nil and we dont have an error,
+	// it means that the refresh token has expired.
+	// In this case, we should clear the tokens and return nil.
+	if newTokens == nil {
+		clearTokens()
+		return nil, nil
+	}
+
+	// Save the new tokens
+	err = saveTokens(*newTokens)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save refreshed tokens: %w", err)
+	}
+
+	return newTokens, nil
 }
 
+// Starts the token exchange process by listening on the given server
+// to receive the callback with an authentication code.
+// The result channel will be used to signal the result of the token exchange.
 func PerformTokenExchange(server *net.TCPListener, result chan<- error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +94,8 @@ func PerformTokenExchange(server *net.TCPListener, result chan<- error) {
 	http.Serve(server, mux)
 }
 
+// Starts the logout process by listening on the given server
+// to receive the callback. The result channel will be used to signal the result of the logout.
 func PerformLogout(server *net.TCPListener, result chan<- error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

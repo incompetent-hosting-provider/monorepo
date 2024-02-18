@@ -1,6 +1,7 @@
 package register
 
 import (
+	"cli/cmd"
 	"cli/internal/authentication"
 	"cli/internal/utils"
 	"fmt"
@@ -8,19 +9,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmd.RootCmd.AddCommand(registerCmd)
+}
+
 // Register Command
 //
 // Allows the user to register for the IHP CLI using keycloak
-var RegisterCmd = &cobra.Command{
+var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register for the IHP CLI",
 	Long:  "Register for the IHP CLI via keycloak",
 	Run: func(cmd *cobra.Command, args []string) {
-		if auth, _ := authentication.GetCurrentAuthentication(); auth != nil {
-			// We don't handle the error since this means that we are unable
-			// to read the current authentication state. In this case we just
-			// assume that the user is not logged in.
-
+		if auth := authentication.GetCurrentAuthentication(); auth != nil {
 			fmt.Println("You are currently logged in. Please log out first!")
 			return
 		}

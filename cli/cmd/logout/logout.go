@@ -1,6 +1,7 @@
 package logout
 
 import (
+	"cli/cmd"
 	"cli/internal/authentication"
 	"cli/internal/utils"
 	"fmt"
@@ -8,16 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmd.RootCmd.AddCommand(logoutCmd)
+}
+
 // Logout Command
 //
 // Allows the user to logout from the IHP CLI
-var LogoutCmd = &cobra.Command{
+var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Log out of the IHP CLI",
 	Long:  "Log out of the IHP CLI. This will clear your current session.",
 	Run: func(cmd *cobra.Command, args []string) {
-		auth, err := authentication.GetCurrentAuthentication()
-		if auth == nil && err == nil {
+		auth := authentication.GetCurrentAuthentication()
+		if auth == nil {
 			fmt.Println("You are not logged in.")
 			return
 		}

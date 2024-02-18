@@ -1,6 +1,7 @@
 package login
 
 import (
+	"cli/cmd"
 	"cli/internal/authentication"
 	"cli/internal/utils"
 	"fmt"
@@ -8,19 +9,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmd.RootCmd.AddCommand(loginCmd)
+}
+
 // Login Command
 //
 // Allows the user to login to the IHP CLI using keycloak
-var LoginCmd = &cobra.Command{
+var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to the IHP CLI",
 	Long:  "Login to the IHP CLI via Keycloak",
 	Run: func(cmd *cobra.Command, args []string) {
-		if auth, _ := authentication.GetCurrentAuthentication(); auth != nil {
-			// We don't handle the error since this means that we are unable
-			// to read the current authentication state. In this case we just
-			// assume that the user is not logged in.
-
+		if auth := authentication.GetCurrentAuthentication(); auth != nil {
 			fmt.Println("You are already logged in.")
 			return
 		}

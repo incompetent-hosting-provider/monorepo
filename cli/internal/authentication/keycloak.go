@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 // The Keycloak Configuration
@@ -66,13 +65,7 @@ func (c KeycloakConfig) performTokenExchangeRequest(authenticationCode string, r
 	body.Set("code", authenticationCode)
 	body.Set("redirect_uri", redirect)
 
-	req, err := http.NewRequest("POST", c.getTokenURL(), strings.NewReader(body.Encode()))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create token exchange request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.PostForm(c.getTokenURL(), body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send token exchange request: %w", err)
 	}
@@ -81,16 +74,50 @@ func (c KeycloakConfig) performTokenExchangeRequest(authenticationCode string, r
 		return nil, fmt.Errorf("failed to exchange code for token: %d - %s", resp.StatusCode, resp.Status)
 	}
 
-	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	respBody, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		return nil, fmt.Errorf("failed to read response body during token exchange: %w", err)
 	}
 
 	var tokens *SessionTokens
 	err = json.Unmarshal(respBody, &tokens)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse JSON response: %w", err)
+		return nil, fmt.Errorf("failed to parse JSON response during token exchange: %w", err)
+	}
+
+	return tokens, nil
+}
+
+// Performs a token refresh request against the Keycloak Server and return the new tokens.
+// If the refresh token has expired nil will be returned.
+func (c KeycloakConfig) performTokenRefreshRequest(refreshToken RefreshToken) (*SessionTokens, error) {
+	form := url.Values{}
+	form.Set("client_id", c.ClientId)
+	form.Set("grant_type", "refresh_token")
+	form.Set("refresh_token", string(refreshToken))
+
+	resp, err := http.PostForm(c.getTokenURL(), form)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send token refresh request: %w", err)
+	}
+
+	if resp.StatusCode == 401 || resp.StatusCode == 400 {
+		return nil, nil
+	} else if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("failed to refresh token: %d - %s", resp.StatusCode, resp.Status)
+	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body during token refresh: %w", err)
+	}
+
+	var tokens *SessionTokens
+	err = json.Unmarshal(respBody, &tokens)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse JSON response during token refresh: %w", err)
 	}
 
 	return tokens, nil
