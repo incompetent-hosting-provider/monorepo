@@ -11,7 +11,6 @@ public class CustomEventListenerProviderFactory implements EventListenerProvider
     private static final Logger log = Logger.getLogger(CustomEventListenerProvider.class.getName());
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
-        log.warning("WHAT IS HAPPENING");
         return new CustomEventListenerProvider(keycloakSession);
     }
 

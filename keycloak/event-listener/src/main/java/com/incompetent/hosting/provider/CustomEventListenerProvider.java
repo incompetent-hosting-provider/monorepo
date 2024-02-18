@@ -11,6 +11,8 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.OperationType;
+import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.KeycloakSession;
 import org.json.JSONObject;
 
@@ -23,13 +25,12 @@ public class CustomEventListenerProvider implements EventListenerProvider {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     public CustomEventListenerProvider(KeycloakSession session) {
+        log.info("provider...");
     }
 
     @Override
     public void onEvent(Event event) {
-
         if (EventType.REGISTER.equals(event.getType()) || EventType.DELETE_ACCOUNT.equals(event.getType())) {
-            log.info("--------\nReceived event\n-------------");
             callBackendWebhook(buildJSONBody(event.getType(), event.getUserId()));
         }
     }
@@ -39,9 +40,12 @@ public class CustomEventListenerProvider implements EventListenerProvider {
     }
 
     private void callBackendWebhook(String jsonPayload)  {
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BackendHost + "/spi-webhooks")).POST(HttpRequest.BodyPublishers.ofString( jsonPayload)).build();
+        log.info(BackendHost + "/spi-webhooks");
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BackendHost + "/spi-webhook")).POST(HttpRequest.BodyPublishers.ofString( jsonPayload)).build();
+        log.info("Webhook call");
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            log.info(response.toString());
         } catch (Exception exception){
             log.warning("Cannot call backend webhook due to an error" + exception.toString());
         }
@@ -49,6 +53,20 @@ public class CustomEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEvent adminEvent, boolean b) {
+        if (!adminEvent.getResourceType().equals(ResourceType.USER)){
+            log.info("No user edit but: "+adminEvent.getResourceType().toString());
+            return;
+        }
+        if (adminEvent.getOperationType().equals(OperationType.CREATE)){
+            callBackendWebhook(buildJSONBody(EventType.REGISTER,adminEvent.getResourcePath().substring("users/".length())));
+        }
+        else if (adminEvent.getOperationType().equals(OperationType.DELETE)){
+            callBackendWebhook(buildJSONBody(EventType.DELETE_ACCOUNT,adminEvent.getResourcePath().substring("users/".length())));
+        }
+        else {
+            log.info("Wrong op type: " + adminEvent.getOperationType().toString());
+        }
+
     }
 
     @Override

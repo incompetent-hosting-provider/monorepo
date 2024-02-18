@@ -4,6 +4,7 @@ import (
 	"incompetent-hosting-provider/backend/pkg/auth"
 	"incompetent-hosting-provider/backend/pkg/payment"
 	"incompetent-hosting-provider/backend/pkg/user"
+	"incompetent-hosting-provider/backend/pkg/webhook"
 
 	docs "incompetent-hosting-provider/backend/docs"
 	"net/http"
@@ -49,6 +50,7 @@ func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddl
 
 	log.Info().Msg("Setting up POST endpoints")
 	ginEngine.POST("/payment", authMiddleware.AuthFunc, payment.ChangeCreditHandler)
+	ginEngine.POST("/spi-webhook", webhook.WebhookHandler)
 }
 
 func configureSwagger(ginEngine *gin.Engine) {
