@@ -2,6 +2,7 @@ package terraformbinary
 
 import (
 	"context"
+	"incompetent-hosting-provider/backend/pkg/util"
 	"os"
 
 	version "github.com/hashicorp/go-version"
@@ -44,6 +45,8 @@ func ensureTerraform(binary_dir string, terraform_version string, terraform_dir 
 
 		log.Debug().Msg("Terraform binary found, skipping download...")
 		execPath = binary_dir + "/terraform"
+
+		util.CreateDirFromAbolutePathIfNotExist(binary_dir, 0700)
 
 		tf, err := tfexec.NewTerraform(terraform_dir, execPath)
 		if err != nil {

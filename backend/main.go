@@ -31,6 +31,12 @@ func main() {
 	ginEngine := endpoints.ConfigureEndpoints()
 	// Dont trust any proxies MIGHT not be what we need for deployment
 	ginEngine.SetTrustedProxies(nil)
+	// No serve to setup application but not actually start the webserver
+	// Mostly used for terraform setup
+	if util.GetStringEnvWithDefault("NO_SERVE", "") != "" {
+		log.Warn().Msg("NO_SERVE was set. Exiting...")
+		return
+	}
 	port := util.GetStringEnvWithDefault("PORT", "8081")
 	log.Info().Msgf("Starting on port: %s", port)
 	ginEngine.Run(fmt.Sprintf(":%s", port))

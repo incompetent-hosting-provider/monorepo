@@ -3,6 +3,7 @@ package endpoints
 import (
 	"incompetent-hosting-provider/backend/pkg/auth"
 	"incompetent-hosting-provider/backend/pkg/payment"
+	"incompetent-hosting-provider/backend/pkg/terraform"
 	"incompetent-hosting-provider/backend/pkg/user"
 
 	docs "incompetent-hosting-provider/backend/docs"
@@ -43,6 +44,8 @@ func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddle
 
 	ginEngine.GET("/payment", authMiddleware.AuthFunc, payment.CreditFetchHandler)
 	ginEngine.GET("/user", authMiddleware.AuthFunc, user.UserFetchHandler)
+
+	ginEngine.GET("/instance", terraform.SampleHandler)
 }
 
 func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
