@@ -3,10 +3,9 @@ package balance
 import (
 	"cli/internal/authentication"
 	"cli/internal/backend"
-	"cli/internal/utils"
+	"cli/internal/messages"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -25,34 +24,17 @@ var BalanceCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		tokens := authentication.GetCurrentAuthentication()
 		if tokens == nil {
-		utils.DisplayNotLoggedInMessage()
-		return
+			messages.DisplayNotLoggedInMessage()
+			return
 		}
 
 		amount, err := backend.GetBalance(*tokens)
-		if err != nil {
-			if errors.Is(err, backend.ErrNotAuthenticated) {
-				// Refresh tokens and try again
-				newTokens, err := authentication.RefreshTokens()
-				if err != nil {
-					displayUnableToGetBalanceMessage(err)
-					os.Exit(1)
-				}
-
-				if newTokens == nil {
-					utils.DisplaySessionExpiredMessage()
-					return
-				}
-
-				amount, err = backend.GetBalance(*newTokens)
-				if err != nil {
-					displayUnableToGetBalanceMessage(err)
-					os.Exit(1)
-				}
-			} else {
-				displayUnableToGetBalanceMessage(err)
-				os.Exit(1)
-			}
+		if errors.Is(err, backend.ErrNotAuthenticated) {
+			messages.DisplaySessionExpiredMessage()
+			return
+		} else if err != nil {
+			displayUnableToGetBalanceMessage(err)
+			return
 		}
 
 		fmt.Println("Your current balance is:", amount, "credits")

@@ -9,7 +9,7 @@ import (
 	"cli/cmd/register"
 	"cli/internal/authentication"
 	"cli/internal/backend"
-	"cli/internal/utils"
+	"cli/internal/messages"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -50,7 +50,7 @@ var RootCmd = &cobra.Command{
 
 		tokens := authentication.GetCurrentAuthentication()
 		if tokens == nil {
-			utils.DisplayNotLoggedInMessage()
+			messages.DisplayNotLoggedInMessage()
 			return
 		}
 
@@ -65,7 +65,7 @@ var RootCmd = &cobra.Command{
 				}
 
 				if newTokens == nil {
-					utils.DisplaySessionExpiredMessage()
+					messages.DisplaySessionExpiredMessage()
 					return
 				}
 

@@ -3,6 +3,7 @@ package backend
 import (
 	"cli/internal/authentication"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,8 +14,23 @@ type GetBalanceResponse struct {
 	Balance int `json:"balance,omitempty"`
 }
 
+// Gets the current balance of the user associated to the tokens provided.
 func GetBalance(tokens authentication.SessionTokens) (int, error) {
-	req, err := getAuthenticatedRequest("GET", "/balance", tokens.AccessToken)
+	balance, err := getBalance(tokens.AccessToken)
+	if err != nil && errors.Is(err, ErrNotAuthenticated) {
+		newTokens, err := authentication.RefreshTokens()
+		if err != nil || newTokens == nil {
+			return 0, fmt.Errorf("failed to get user balance: %w: %w", ErrNotAuthenticated, err)
+		}
+
+		return getBalance(newTokens.AccessToken)
+	}
+
+	return balance, err
+}
+
+func getBalance(token authentication.AccessToken) (int, error) {
+	req, err := getAuthenticatedRequest("GET", "/balance", token)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create get balance request: %w", err)
 	}
