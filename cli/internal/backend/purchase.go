@@ -10,10 +10,6 @@ import (
 	"net/http"
 )
 
-type PurchaseRequest struct {
-	Amount int `json:"amount"`
-}
-
 type PurchaseResponse struct {
 	Balance int `json:"balance"`
 }
@@ -36,18 +32,18 @@ func Purchase(tokens authentication.SessionTokens, amount int) (int, error) {
 }
 
 func makePurchaseRequest(tokens authentication.SessionTokens, amount int) (int, error){
-	req, err := getAuthenticatedRequest("POST", "/purchase", tokens.AccessToken)
+	reqJson, err := json.Marshal(map[string]any{
+		"amount": amount,
+	})
 	if err != nil {
 		return 0, fmt.Errorf("failed to create purchase request: %w", err)
 	}
 
-	reqBody, err := json.Marshal(PurchaseRequest{Amount: amount})
+	req, err := getAuthenticatedRequest("POST", "/payment", tokens.AccessToken, bytes.NewBuffer(reqJson))
 	if err != nil {
-		return 0, fmt.Errorf("failed to encode purchase request: %w", err)
+		return 0, fmt.Errorf("failed to create purchase request: %w", err)
 	}
 
-	req.Body = io.NopCloser(bytes.NewReader(reqBody))
-	req.ContentLength = int64(len(reqBody))
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
@@ -58,6 +54,7 @@ func makePurchaseRequest(tokens authentication.SessionTokens, amount int) (int, 
 
 	switch resp.StatusCode {
 	case 200:
+	case 201:
 		break
 	case 401:
 		return 0, fmt.Errorf("failed to purchase credits: %w", ErrNotAuthenticated)

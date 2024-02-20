@@ -13,13 +13,13 @@ func TestGetAuthenticatedRequestURL(t *testing.T) {
 
 	// ACT
 	reqPath := "/test"
-	req, err := getAuthenticatedRequest("GET", reqPath, accessToken)
+	req, err := getAuthenticatedRequest("GET", reqPath, accessToken, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
 	// ASSERT
-	expectedURL := backendBaseURL + reqPath
+	expectedURL := baseURL + reqPath
 	if req.URL.String() != expectedURL {
 		t.Errorf("unexpected URL, got: %s, want: %s", req.URL.String(), expectedURL)
 	}
@@ -33,7 +33,7 @@ func TestGetAuthenticatedRequestHeader(t *testing.T) {
 
 	// ACT
 	reqPath := "/test"
-	req, err := getAuthenticatedRequest("GET", reqPath, accessToken)
+	req, err := getAuthenticatedRequest("GET", reqPath, accessToken, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}

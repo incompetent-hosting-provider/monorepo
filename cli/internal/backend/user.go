@@ -14,7 +14,7 @@ type UserInfo struct {
 }
 
 func GetUserInfo(tokens authentication.SessionTokens) (*UserInfo, error) {
-	req, err := getAuthenticatedRequest("GET", "/user", tokens.AccessToken)
+	req, err := getAuthenticatedRequest("GET", "/user", tokens.AccessToken, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build request for user info: %w", err)
 	}

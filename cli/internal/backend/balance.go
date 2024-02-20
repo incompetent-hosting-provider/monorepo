@@ -30,7 +30,7 @@ func GetBalance(tokens authentication.SessionTokens) (int, error) {
 }
 
 func getBalance(token authentication.AccessToken) (int, error) {
-	req, err := getAuthenticatedRequest("GET", "/balance", token)
+	req, err := getAuthenticatedRequest("GET", "/payment", token, nil)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create get balance request: %w", err)
 	}
