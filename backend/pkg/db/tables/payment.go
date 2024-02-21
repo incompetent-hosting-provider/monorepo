@@ -124,7 +124,7 @@ func GetUserBalance(userSub string) (int, error) {
 	val, err := conn.GetItem(context.TODO(), &param)
 
 	// Is this ideal? I am not sure
-	if err != nil {
+	if err == nil {
 		var notFoundEx *types.ResourceNotFoundException
 		// If user not in table -> Assume that user has never added currency yet i.e. has a current balance of zero
 		if errors.As(err, &notFoundEx) {
@@ -132,6 +132,13 @@ func GetUserBalance(userSub string) (int, error) {
 		}
 		balance = 0
 	} else {
+		if val.Item["Balance"] == nil {
+			log.Warn().Msg("There was an error parsing the balance for a user. This may indiciate corrupt data.")
+			// Set balance to 0 to avoid panic and still return a value
+			// This edge case can also occur if the user is not created in the balance table therefore throwing an internal server error would (for now) not be sufficient.
+			// For the user to get here the JWT has to be valid -> the user likely exists on the keycloak side of things
+			return 0, nil
+		}
 		balance, _ = strconv.Atoi(val.Item["Balance"].(*types.AttributeValueMemberN).Value)
 	}
 	return balance, err
