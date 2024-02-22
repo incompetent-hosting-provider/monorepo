@@ -10,6 +10,7 @@ import (
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -30,6 +31,10 @@ func configureGlobalMiddleWares(ginEngine *gin.Engine) {
 	log.Info().Msg("Setting up middlewares")
 	// Add recovery middleware to stop errors from oozing out
 	ginEngine.Use(gin.Recovery())
+
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(ginEngine)
+	p.SetListenAddress("/metrics")
 }
 
 func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
