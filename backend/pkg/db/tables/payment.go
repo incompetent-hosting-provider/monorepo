@@ -143,3 +143,52 @@ func GetUserBalance(userSub string) (int, error) {
 	}
 	return balance, err
 }
+
+
+func DeleteUserBalance(userSub string) error {
+
+	// If in test run -> Skip and return dummy values
+	if util.IsTestRun() {
+		return nil
+	}
+
+	conn := db.GetDynamoConn()
+
+	param := dynamodb.DeleteItemInput{
+		Key:       map[string]types.AttributeValue{"UserSub": &types.AttributeValueMemberS{Value: userSub}},
+		TableName: aws.String(TABLE_NAME),
+	}
+
+	_, err := conn.DeleteItem(context.TODO(), &param)
+
+	if err != nil {
+		log.Warn().Msgf("Could not delete balance item", err)
+	}
+	return err
+}
+
+
+func InsertUserBalance(userSub string) error {
+
+	// If in test run -> Skip and return dummy values
+	if util.IsTestRun() {
+		return nil
+	}
+
+	conn := db.GetDynamoConn()
+
+	param := dynamodb.PutItemInput{
+		Item: map[string]types.AttributeValue{
+			"UserSub": &types.AttributeValueMemberS{Value: userSub},
+			"Balance": &types.AttributeValueMemberN{Value: "183"},
+		},
+		TableName: aws.String(TABLE_NAME),
+	}
+
+	_, err := conn.PutItem(context.TODO(), &param)
+
+	if err != nil {
+		log.Warn().Msgf("Could not insert balance item", err)
+	}
+	return err
+}
