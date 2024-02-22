@@ -29,6 +29,7 @@ services:
 
   backend:
     build: ./backend
+    restart: always
     links:
       - "dynamodb:dynamodb"
       - "keycloak:keycloak"

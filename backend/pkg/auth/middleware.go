@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"incompetent-hosting-provider/backend/pkg/constants"
 	"incompetent-hosting-provider/backend/pkg/util"
+	"net/http"
 	"strings"
 
 	"github.com/MicahParks/keyfunc/v3"
@@ -17,9 +17,26 @@ type AuthMiddleware struct {
 	JWKS keyfunc.Keyfunc
 }
 
+func isJWKSEndpointReachable(url string) bool {
+	resp, err := http.Get(url)
+	if err != nil {
+		print(err.Error())
+		return false
+	} else {
+		print(string(resp.StatusCode) + resp.Status)
+	}
+	return true
+}
+
 // the init function is called exactly once in golang
 func GetAuthMiddleware() AuthMiddleware {
 	JWKS_URL := util.GetStringEnvWithDefault("KEYCLOAK_CERT_ENDPOINT_URL", "http://localhost:8080/realms/ihp-realm/protocol/openid-connect/certs")
+
+	if !isJWKSEndpointReachable(JWKS_URL) {
+		log.Warn().Msg("JWKS endpoint not reachable")
+		panic("JWKS endpoint not reachable")
+	}
+
 	// Create the JWKS from the resource at the given URL.
 	jwks, err := keyfunc.NewDefault([]string{JWKS_URL})
 
@@ -31,15 +48,6 @@ func GetAuthMiddleware() AuthMiddleware {
 	log.Info().Msg("JWKS initialized")
 
 	return AuthMiddleware{JWKS: jwks}
-}
-
-func getKeyFromHeader(claim jwt.MapClaims, key string) (string, error) {
-	val, ok := claim["foo"]
-	// If the key exists
-	if ok {
-		return fmt.Sprint(val), nil
-	}
-	return "", errors.New("JWT claim did not contain expected key")
 }
 
 func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
@@ -56,6 +64,8 @@ func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
 		util.ThrowUnauthorizedException(c, "Unauthorized")
 		return
 	}
+
+	log.Warn().Msgf("%v", a.JWKS)
 
 	parsed_token, err := jwt.Parse(token, a.JWKS.Keyfunc)
 

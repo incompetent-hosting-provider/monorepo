@@ -40,7 +40,7 @@ public class CustomEventListenerProvider implements EventListenerProvider {
     }
 
     private void callBackendWebhook(String jsonPayload)  {
-        log.info(BackendHost + "/spi-webhooks");
+        log.info(BackendHost + "/spi-webhook");
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BackendHost + "/spi-webhook")).POST(HttpRequest.BodyPublishers.ofString( jsonPayload)).build();
         log.info("Webhook call");
         try {
