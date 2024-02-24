@@ -52,46 +52,23 @@ func WebhookHandler(c *gin.Context) {
 
 	// Respond with a success status
 	c.JSON(http.StatusOK, gin.H{"message": "Webhook processed successfully"})
-
 }
 
 func handleUserRegistration(userId string) {
-    log.Info().Msgf("User with ID %s registered", userId)
+    db_payment.InsertUserBalance(userId) // Insert user balance
+    logUserBalance(userId) // Log user balance
+}
+
+func handleUserDeletion(userId string) {
+    db_payment.DeleteUserBalance(userId) // Delete user balance
+    logUserBalance(userId) // Log user balance
+}
+
+func logUserBalance(userId string) {
     userBalance1, err := db_payment.GetUserBalance(userId)
     if err != nil {
         log.Error().Err(err).Msg("Failed to get user balance")
         return
     }
-    log.Info().Msgf("User balance: %v", userBalance1)
-    
-    db_payment.InsertUserBalance(userId)
-    
-    userBalance2, err := db_payment.GetUserBalance(userId)
-    if err != nil {
-        log.Error().Err(err).Msg("Failed to get user balance")
-        return
-    }
-    log.Info().Msgf("User balance: %v", userBalance2)
+    log.Info().Msgf("logUserBalance - User balance: %v", userBalance1)
 }
-
-func handleUserDeletion(userId string) {
-    log.Info().Msgf("User with ID %s deleted", userId)
-    
-    userBalance3, err := db_payment.GetUserBalance(userId)
-    if err != nil {
-        log.Error().Err(err).Msg("Failed to get user balance")
-        return
-    }
-    log.Info().Msgf("User balance: %v", userBalance3)
-    
-    db_payment.DeleteUserBalance(userId)
-    
-    // Fixing userId4 typo and userBalance4 unused variable
-    userBalance4, err := db_payment.GetUserBalance(userId)
-    if err != nil {
-        log.Error().Err(err).Msg("Failed to get user balance")
-        return
-    }
-    log.Info().Msgf("User balance: %v", userBalance4)
-}
-
