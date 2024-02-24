@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"incompetent-hosting-provider/backend/pkg/auth"
+	"incompetent-hosting-provider/backend/pkg/instances"
 	"incompetent-hosting-provider/backend/pkg/payment"
 	"incompetent-hosting-provider/backend/pkg/user"
 
@@ -23,6 +24,7 @@ func ConfigureEndpoints() *gin.Engine {
 	configureGlobalMiddleWares(ginEngine)
 	configureGetEndpoints(ginEngine, authMiddleware)
 	configurePostEndpoints(ginEngine, authMiddleware)
+	configureDeleteEndpoints(ginEngine, authMiddleware)
 	configureSwagger(ginEngine)
 	return ginEngine
 }
@@ -36,6 +38,7 @@ func configureGlobalMiddleWares(ginEngine *gin.Engine) {
 	p.Use(ginEngine)
 	p.SetListenAddress("/metrics")
 }
+
 
 func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
 	log.Info().Msg("Setting up GET endpoints")
@@ -51,9 +54,18 @@ func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddle
 }
 
 func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
-
 	log.Info().Msg("Setting up POST endpoints")
+
 	ginEngine.POST("/payment", authMiddleware.AuthFunc, payment.ChangeCreditHandler)
+	ginEngine.POST("/instances/preset", authMiddleware.AuthFunc, instances.CreatePresetContainerHandler)
+	ginEngine.POST("/instances/custom", authMiddleware.AuthFunc, instances.CreateCustomContainerHandler)
+}
+
+
+func configureDeleteEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware){
+	log.Info().Msg("Setting up DELETE endpoints")
+
+	ginEngine.DELETE("/instances/:containerId", authMiddleware.AuthFunc, instances.DeleteContainerHandler)
 }
 
 func configureSwagger(ginEngine *gin.Engine) {

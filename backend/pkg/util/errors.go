@@ -26,6 +26,10 @@ func ThrowBadRequestException(c *gin.Context, message string) {
 	throwError(c, http.StatusBadRequest, message)
 }
 
+func ThrowServiceUnavailableException(c *gin.Context, message string){
+	throwError(c, http.StatusServiceUnavailable, message)
+}
+
 func throwError(c *gin.Context, statuscode int, message string) {
 	c.JSON(statuscode, ErrorResponse{Error: message})
 	c.Abort()
