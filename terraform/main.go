@@ -12,9 +12,10 @@ import (
 	log "github.com/rs/zerolog/log"
 )
 
+const tf_version string = "1.7.1"
+
 var cwd, _ = os.Getwd()
 var tf_bin_dir string = filepath.Join(cwd, "bins")
-var tf_version string = "1.7.1"
 var tf_cwd_dir string = filepath.Join(cwd, "TerraDocker/dev")
 
 // Note: terraform.tfvars.json is the default and does not need to be included

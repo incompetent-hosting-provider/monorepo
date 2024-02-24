@@ -3,6 +3,7 @@ package terraformbinary
 import (
 	"context"
 	"os"
+	"path/filepath"
 
 	version "github.com/hashicorp/go-version"
 	product "github.com/hashicorp/hc-install/product"
@@ -19,7 +20,7 @@ func installTerraform(binary_dir string, terraform_version string) (string, erro
 		InstallDir: binary_dir,
 	}
 
-	execPath, err := installer.Install(context.Background())
+	execPath, err := installer.Install(context.TODO())
 	if err != nil {
 		return "", err
 	}
@@ -31,7 +32,7 @@ func installTerraform(binary_dir string, terraform_version string) (string, erro
 
 func ensureTerraform(binary_dir string, terraform_version string, terraform_dir string) (*tfexec.Terraform, error) {
 	log.Debug().Msgf("Ensuring terraform version %s", terraform_version)
-	execPath := binary_dir + "/" + "terraform"
+	execPath := filepath.Join(binary_dir, "terraform")
 
 	// Check if the terraform binary is already present
 	if _, err := os.Stat(execPath); os.IsNotExist(err) {
@@ -53,7 +54,7 @@ func ensureTerraform(binary_dir string, terraform_version string, terraform_dir 
 		}
 
 		log.Debug().Msg("Trying to get terraform version")
-		tfVersion, _, err := tf.Version(context.Background(), true)
+		tfVersion, _, err := tf.Version(context.TODO(), true)
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +69,7 @@ func ensureTerraform(binary_dir string, terraform_version string, terraform_dir 
 		}
 
 		log.Debug().Msgf("Trying to get new terraform version")
-		tfVersion, _, err = tf.Version(context.Background(), true)
+		tfVersion, _, err = tf.Version(context.TODO(), true)
 		if err != nil {
 			return nil, err
 		}

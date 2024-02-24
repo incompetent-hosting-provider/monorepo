@@ -3,6 +3,7 @@ package main_test
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 
@@ -12,15 +13,16 @@ import (
 	log "github.com/rs/zerolog/log"
 )
 
+const tf_version string = "1.7.1"
+
 var cwd, _ = os.Getwd()
-var tf_bin_dir string = cwd + "/bins"
-var tf_version string = "1.7.1"
-var tf_cwd_dir string = cwd + "/TerraDocker/test"
+var tf_bin_dir string = filepath.Join(cwd, "bins")
+var tf_cwd_dir string = filepath.Join(cwd, "TerraDocker/test")
 
 // Note: terraform.tfvars.json is the default and does not need to be included
 var tf_envs_names []string = []string{
-	tf_cwd_dir + "/terraform.tfvars.json",
-	tf_cwd_dir + "/creds.tfvars.json",
+	filepath.Join(tf_cwd_dir, "terraform.tfvars.json"),
+	filepath.Join(tf_cwd_dir, "creds.tfvars.json"),
 }
 
 func TestRunMainApplyTerraform(t *testing.T) {

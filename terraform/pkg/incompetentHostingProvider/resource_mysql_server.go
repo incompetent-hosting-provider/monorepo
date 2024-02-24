@@ -17,7 +17,7 @@ import (
 func GetMySQLContainers(tf *tfexec.Terraform) (map[int]DockerMySQL, error) {
 	mysql_containers := make(map[int]DockerMySQL)
 
-	state, err := tf.Show(context.Background())
+	state, err := tf.Show(context.TODO())
 	if err != nil {
 		log.Error().Msgf("Error showing terraform plan: %s", err)
 		return nil, err

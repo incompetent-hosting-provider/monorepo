@@ -16,7 +16,7 @@ func RunTerra(tf *tfexec.Terraform, tfFilesPath string, varFiles ...string) (*tf
 		tfPlanOpts = append(tfPlanOpts, varFileOpt)
 	}
 
-	plan_diff, err := tf.Plan(context.Background(), tfPlanOpts...)
+	plan_diff, err := tf.Plan(context.TODO(), tfPlanOpts...)
 	if err != nil {
 		log.Error().Msgf("Error planning terraform: %s", err)
 		return nil, err
@@ -31,7 +31,8 @@ func RunTerra(tf *tfexec.Terraform, tfFilesPath string, varFiles ...string) (*tf
 	}
 
 	if plan_diff {
-		// err := tf.Destroy(context.Background(), tfexec.VarFile("creds.tfvars"))
+		// TODO: Rethink if destroying beforehand is necessary
+		// err := tf.Destroy(context.TODO(), tfexec.VarFile("creds.tfvars"))
 		// handleError(err, "Error destroying terraform")
 
 		tfApplyOpts := []tfexec.ApplyOption{}
@@ -40,7 +41,7 @@ func RunTerra(tf *tfexec.Terraform, tfFilesPath string, varFiles ...string) (*tf
 			tfApplyOpts = append(tfApplyOpts, varFileOpt)
 		}
 
-		err = tf.Apply(context.Background(), tfApplyOpts...)
+		err = tf.Apply(context.TODO(), tfApplyOpts...)
 		if err != nil {
 			log.Error().Msgf("Error applying terraform: %s", err)
 			return nil, err
@@ -49,7 +50,7 @@ func RunTerra(tf *tfexec.Terraform, tfFilesPath string, varFiles ...string) (*tf
 		log.Info().Msg("Terraform apply complete")
 	}
 
-	state, err := tf.Show(context.Background())
+	state, err := tf.Show(context.TODO())
 	if err != nil {
 		log.Error().Msgf("Error showing terraform plan: %s", err)
 		return nil, err

@@ -95,6 +95,6 @@ func (t *TerraformBinary) GetState() (*tfjson.State, error) {
 	if err != nil {
 		return nil, err
 	}
-	state, err := tf.Show(context.Background())
+	state, err := tf.Show(context.TODO())
 	return state, err
 }
