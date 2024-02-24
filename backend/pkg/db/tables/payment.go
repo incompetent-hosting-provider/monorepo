@@ -180,7 +180,7 @@ func InsertUserBalance(userSub string) error {
 	param := dynamodb.PutItemInput{
 		Item: map[string]types.AttributeValue{
 			"UserSub": &types.AttributeValueMemberS{Value: userSub},
-			"Balance": &types.AttributeValueMemberN{Value: "183"},
+			"Balance": &types.AttributeValueMemberN{Value: "0"},
 		},
 		TableName: aws.String(TABLE_NAME),
 	}
