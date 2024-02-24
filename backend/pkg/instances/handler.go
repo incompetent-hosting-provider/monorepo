@@ -11,26 +11,26 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type createPresetContainerBody struct {
+type CreatePresetContainerBody struct {
   Preset string `json:"preset"` 
   ContainerName string `json:"name"`
   Description string `json:"description"`
 }
 
-type containerImageDescription struct{
+type ContainerImageDescription struct{
 	Tag string `json:"version"`
 	ImageName string `json:"name"`
 }
 
-type createCustomContainerBody struct {
+type CreateCustomContainerBody struct {
 	Containername string `json:"name"`
 	Description string `json:"description"`
-	Image containerImageDescription `json:"image"`
+	Image ContainerImageDescription `json:"image"`
 	EnvVars map[string]string `json:"env_vars"`
 	Ports []string `json:"ports"`
 }
 
-type creatContainerResponse  struct{
+type CreateContainerResponse  struct{
 	ContainerId string `json:"id"`
 }
 
@@ -43,7 +43,9 @@ type creatContainerResponse  struct{
 //
 // @Security					BearerAuth
 //
-// @Success 					202 {object} user.UserResponse
+// @Param request body instances.CreatePresetContainerBody true "query params"
+//
+// @Success 					202 {object} instances.CreateContainerResponse
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
@@ -55,7 +57,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	// Use header set by middleware
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	var createRequest createPresetContainerBody 
+	var createRequest CreatePresetContainerBody 
 
 	err := c.ShouldBindJSON(&createRequest)
 	if err != nil {
@@ -77,7 +79,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, creatContainerResponse{
+	c.JSON(http.StatusAccepted, CreateContainerResponse{
 		ContainerId: containerId,
 	})
 
@@ -93,7 +95,9 @@ func CreatePresetContainerHandler(c *gin.Context) {
 //
 // @Security					BearerAuth
 //
-// @Success 					202 {object} user.UserResponse
+// @Param request body instances.CreateCustomContainerBody true "query params"
+//
+// @Success 					202 {object} instances.CreateContainerResponse
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
@@ -105,7 +109,7 @@ func CreateCustomContainerHandler(c *gin.Context) {
 	// Use header set by middleware
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	var createRequest createCustomContainerBody 
+	var createRequest CreateCustomContainerBody 
 
 	err := c.ShouldBindJSON(&createRequest)
 	if err != nil {
@@ -130,7 +134,7 @@ func CreateCustomContainerHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, creatContainerResponse{
+	c.JSON(http.StatusAccepted, CreateContainerResponse{
 		ContainerId: containerId,
 	})
 }
@@ -146,15 +150,16 @@ func CreateCustomContainerHandler(c *gin.Context) {
 //
 // @Security					BearerAuth
 //
-// @Success 					202 {object} user.UserResponse
+// @Param   containerId     path    string     true        "Container Id"
+//
+// @Success 					202 {string} string	"accepted" 
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
 // @Failure						503 {object} util.ErrorResponse
 // @Failure						500 {object} util.ErrorResponse
 //
-// @Router /instances/:id [delete]
-
+// @Router /instances/:containerId [delete]
 func DeleteContainerHandler(c *gin.Context){
 	containerId := c.Param("containerId")
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
