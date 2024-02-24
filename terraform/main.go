@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	helper "goterra/pkg/helper"
 	ihp "goterra/pkg/incompetentHostingProvider"
@@ -12,14 +13,14 @@ import (
 )
 
 var cwd, _ = os.Getwd()
-var tf_bin_dir string = cwd + "/bins"
+var tf_bin_dir string = filepath.Join(cwd, "bins")
 var tf_version string = "1.7.1"
-var tf_cwd_dir string = cwd + "/TerraDocker/dev"
+var tf_cwd_dir string = filepath.Join(cwd, "TerraDocker/dev")
 
 // Note: terraform.tfvars.json is the default and does not need to be included
 var tf_envs_names []string = []string{
-	tf_cwd_dir + "/terraform.tfvars.json",
-	tf_cwd_dir + "/creds.tfvars.json",
+	filepath.Join(tf_cwd_dir, "terraform.tfvars.json"),
+	filepath.Join(tf_cwd_dir, "creds.tfvars.json"),
 }
 
 func main() {

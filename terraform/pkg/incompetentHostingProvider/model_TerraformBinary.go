@@ -2,6 +2,8 @@ package incompetenthostingprovider
 
 import (
 	"context"
+	"path/filepath"
+
 	tfbin "goterra/pkg/terraformBinary"
 
 	tfexec "github.com/hashicorp/terraform-exec/tfexec"
@@ -32,12 +34,15 @@ func (i *TerraformBinary) ApplyTerraform(containerToCreate []DockerMySQL, contai
 		return nil, err
 	}
 
-	ihpenv, err := ReadCustomEnv(i.tfbin.GetWorkingDirectory() + "/terraform.tfvars.json")
+	ihpenv_path := filepath.Join(i.tfbin.GetWorkingDirectory(), "terraform.tfvars.json")
+	ihpcredsenv_path := i.tfbin.GetEnvironmentFiles()[1]
+
+	ihpenv, err := ReadCustomEnv(ihpenv_path)
 	if err != nil {
 		return nil, err
 	}
 	// TODO: Currently only uses one additional environment file, should be able to use multiple.
-	ihpcredsenv, err := ReadCredsEnv(i.tfbin.GetEnvironmentFiles()[1])
+	ihpcredsenv, err := ReadCredsEnv(ihpcredsenv_path)
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +58,11 @@ func (i *TerraformBinary) ApplyTerraform(containerToCreate []DockerMySQL, contai
 			return nil, err
 		}
 
-		err = WriteCustomEnv(i.tfbin.GetWorkingDirectory()+"/terraform.tfvars.json", ihpenv)
+		err = WriteCustomEnv(ihpenv_path, ihpenv)
 		if err != nil {
 			return nil, err
 		}
-		err = WriteCredsEnv(i.tfbin.GetEnvironmentFiles()[1], ihpcredsenv)
+		err = WriteCredsEnv(ihpcredsenv_path, ihpcredsenv)
 		if err != nil {
 			return nil, err
 		}
@@ -67,11 +72,11 @@ func (i *TerraformBinary) ApplyTerraform(containerToCreate []DockerMySQL, contai
 		ihpenv.AddMySqlContainer(container.GetUid(), 0, container.GetMySqlRootPassword())
 		ihpcredsenv.AddMysqlRootPassword(container.GetMySqlRootPassword())
 
-		err = WriteCustomEnv(i.tfbin.GetWorkingDirectory()+"/terraform.tfvars.json", ihpenv)
+		err = WriteCustomEnv(ihpenv_path, ihpenv)
 		if err != nil {
 			return nil, err
 		}
-		err = WriteCredsEnv(i.tfbin.GetEnvironmentFiles()[1], ihpcredsenv)
+		err = WriteCredsEnv(ihpcredsenv_path, ihpcredsenv)
 		if err != nil {
 			return nil, err
 		}
