@@ -6,39 +6,37 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type PresetContainerStartEvent struct{
+type PresetContainerStartEvent struct {
 	ContainerUUID string
-	UserId string
-	PresetId string
+	UserId        string
+	PresetId      int
 }
 
-type CustomContainerStartEvent struct{
-	ContainerUUID string
-	UserId string
-	ContainerImage string
+type CustomContainerStartEvent struct {
+	ContainerUUID     string
+	UserId            string
+	ContainerImage    string
 	ContainerImageTag string
-	ContainerEnv map[string]string
-	ContainerPorts []string
+	ContainerEnv      map[string]string
+	ContainerPorts    []int
 }
 
-type DeleteContainerEvent struct{
+type DeleteContainerEvent struct {
 	ContainerUUID string
-	UserId string
+	UserId        string
 }
 
-
-type mqWrapper struct{
-	prestContainerEventQueue amqp.Queue
-	customContainerEventQueue amqp.Queue
-	stopContainerEventQueue amqp.Queue
-	mqConn *amqp.Connection
-	mqChann *amqp.Channel
-	CustomContainerStartEventChannel chan CustomContainerStartEvent 
-	PresetContainerStartEventChannel chan PresetContainerStartEvent 
-	DeleteContainerEventChannel chan DeleteContainerEvent
+type mqWrapper struct {
+	prestContainerEventQueue         amqp.Queue
+	customContainerEventQueue        amqp.Queue
+	stopContainerEventQueue          amqp.Queue
+	mqConn                           *amqp.Connection
+	mqChann                          *amqp.Channel
+	CustomContainerStartEventChannel chan CustomContainerStartEvent
+	PresetContainerStartEventChannel chan PresetContainerStartEvent
+	DeleteContainerEventChannel      chan DeleteContainerEvent
 }
 
-
-func serializeEvent[T CustomContainerStartEvent | PresetContainerStartEvent | DeleteContainerEvent](input T) ([]byte, error){
+func serializeEvent[T CustomContainerStartEvent | PresetContainerStartEvent | DeleteContainerEvent](input T) ([]byte, error) {
 	return json.Marshal(input)
 }

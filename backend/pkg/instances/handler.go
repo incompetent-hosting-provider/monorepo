@@ -12,34 +12,34 @@ import (
 )
 
 type CreatePresetContainerBody struct {
-  Preset string `json:"preset"` 
-  ContainerName string `json:"name"`
-  Description string `json:"description"`
+	Preset        int    `json:"preset"`
+	ContainerName string `json:"name"`
+	Description   string `json:"description"`
 }
 
-type ContainerImageDescription struct{
-	Tag string `json:"version"`
+type ContainerImageDescription struct {
+	Tag       string `json:"version"`
 	ImageName string `json:"name"`
 }
 
 type CreateCustomContainerBody struct {
-	Containername string `json:"name"`
-	Description string `json:"description"`
-	Image ContainerImageDescription `json:"image"`
-	EnvVars map[string]string `json:"env_vars"`
-	Ports []string `json:"ports"`
+	Containername string                    `json:"name"`
+	Description   string                    `json:"description"`
+	Image         ContainerImageDescription `json:"image"`
+	EnvVars       map[string]string         `json:"env_vars"`
+	Ports         []int                     `json:"ports"`
 }
 
-type CreateContainerResponse  struct{
+type CreateContainerResponse struct {
 	ContainerId string `json:"id"`
 }
 
 // godoc
-// @Summary 				  	Create container based on preset 	
+// @Summary 				  	Create container based on preset
 //
 // @Schemes
-// @Description 				Start the container creation flow. This will schedule the creation of said container	
-// @Tags 						instances	
+// @Description 				Start the container creation flow. This will schedule the creation of said container
+// @Tags 						instances
 //
 // @Security					BearerAuth
 //
@@ -57,7 +57,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	// Use header set by middleware
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	var createRequest CreatePresetContainerBody 
+	var createRequest CreatePresetContainerBody
 
 	err := c.ShouldBindJSON(&createRequest)
 	if err != nil {
@@ -69,13 +69,13 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	containerId := uuid.NewString()
 
 	err = mq_handler.PublishPresetContainerStartEvent(mq_handler.PresetContainerStartEvent{
-		UserId: userId,
+		UserId:        userId,
 		ContainerUUID: containerId,
-		PresetId: createRequest.Preset,
+		PresetId:      createRequest.Preset,
 	})
 
-	if err != nil{
-		util.ThrowServiceUnavailableException(c,"Could not schedule container at the current time")
+	if err != nil {
+		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
 		return
 	}
 
@@ -85,13 +85,12 @@ func CreatePresetContainerHandler(c *gin.Context) {
 
 }
 
-
 // godoc
 // @Summary 				  	Create container based on custom definition
 //
 // @Schemes
-// @Description 				Start the container creation flow. This will schedule the creation of said container	
-// @Tags 						instances	
+// @Description 				Start the container creation flow. This will schedule the creation of said container
+// @Tags 						instances
 //
 // @Security					BearerAuth
 //
@@ -109,7 +108,7 @@ func CreateCustomContainerHandler(c *gin.Context) {
 	// Use header set by middleware
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	var createRequest CreateCustomContainerBody 
+	var createRequest CreateCustomContainerBody
 
 	err := c.ShouldBindJSON(&createRequest)
 	if err != nil {
@@ -121,16 +120,16 @@ func CreateCustomContainerHandler(c *gin.Context) {
 	containerId := uuid.NewString()
 
 	err = mq_handler.PublishCustomContainerStartEvent(mq_handler.CustomContainerStartEvent{
-		UserId: userId,
-		ContainerUUID: containerId,
-		ContainerImage: createRequest.Image.ImageName,
+		UserId:            userId,
+		ContainerUUID:     containerId,
+		ContainerImage:    createRequest.Image.ImageName,
 		ContainerImageTag: createRequest.Image.Tag,
-		ContainerEnv: createRequest.EnvVars,
-		ContainerPorts: createRequest.Ports,
+		ContainerEnv:      createRequest.EnvVars,
+		ContainerPorts:    createRequest.Ports,
 	})
 
-	if err != nil{
-		util.ThrowServiceUnavailableException(c,"Could not schedule container at the current time")
+	if err != nil {
+		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
 		return
 	}
 
@@ -139,20 +138,18 @@ func CreateCustomContainerHandler(c *gin.Context) {
 	})
 }
 
-
-
 // godoc
-// @Summary 				  	Delete container	
+// @Summary 				  	Delete container
 //
 // @Schemes
 // @Description 				Delete container by ID
-// @Tags 						instances	
+// @Tags 						instances
 //
 // @Security					BearerAuth
 //
 // @Param   containerId     path    string     true        "Container Id"
 //
-// @Success 					202 {string} string	"accepted" 
+// @Success 					202 {string} string	"accepted"
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
@@ -160,25 +157,23 @@ func CreateCustomContainerHandler(c *gin.Context) {
 // @Failure						500 {object} util.ErrorResponse
 //
 // @Router /instances/:containerId [delete]
-func DeleteContainerHandler(c *gin.Context){
+func DeleteContainerHandler(c *gin.Context) {
 	containerId := c.Param("containerId")
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-
-	if containerId == ""{
-		util.ThrowBadRequestException(c,"No valid containerId passed")
+	if containerId == "" {
+		util.ThrowBadRequestException(c, "No valid containerId passed")
 	}
 
-	err := mq_handler.PublishDeleeteContainerEvent(mq_handler.DeleteContainerEvent{
-		ContainerUUID: containerId,	
-		UserId: userId,
+	err := mq_handler.PublishDeleteContainerEvent(mq_handler.DeleteContainerEvent{
+		ContainerUUID: containerId,
+		UserId:        userId,
 	})
 
-	if err != nil{
-		util.ThrowServiceUnavailableException(c,"Could not schedule container at the current time")
+	if err != nil {
+		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
 		return
 	}
 
 	c.Status(http.StatusAccepted)
 }
-
