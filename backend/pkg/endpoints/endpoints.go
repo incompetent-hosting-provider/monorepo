@@ -5,6 +5,7 @@ import (
 	"incompetent-hosting-provider/backend/pkg/instances"
 	"incompetent-hosting-provider/backend/pkg/payment"
 	"incompetent-hosting-provider/backend/pkg/user"
+	"incompetent-hosting-provider/backend/pkg/webhook"
 
 	docs "incompetent-hosting-provider/backend/docs"
 	"net/http"
@@ -57,10 +58,10 @@ func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddl
 	log.Info().Msg("Setting up POST endpoints")
 
 	ginEngine.POST("/payment", authMiddleware.AuthFunc, payment.ChangeCreditHandler)
+	ginEngine.POST("/spi-webhook", webhook.WebhookHandler)
 	ginEngine.POST("/instances/preset", authMiddleware.AuthFunc, instances.CreatePresetContainerHandler)
 	ginEngine.POST("/instances/custom", authMiddleware.AuthFunc, instances.CreateCustomContainerHandler)
 }
-
 
 func configureDeleteEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware){
 	log.Info().Msg("Setting up DELETE endpoints")
