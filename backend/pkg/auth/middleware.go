@@ -18,12 +18,10 @@ type AuthMiddleware struct {
 }
 
 func isJWKSEndpointReachable(url string) bool {
-	resp, err := http.Get(url)
+	_, err := http.Get(url)
 	if err != nil {
 		print(err.Error())
 		return false
-	} else {
-		print(string(resp.StatusCode) + resp.Status)
 	}
 	return true
 }
