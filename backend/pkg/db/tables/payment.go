@@ -163,7 +163,7 @@ func DeleteUserBalance(userSub string) error {
 	_, err := conn.DeleteItem(context.TODO(), &param)
 
 	if err != nil {
-		log.Warn().Msgf("Could not delete balance item", err)
+		log.Warn().Msgf("Could not delete balance item %v", err)
 	}
 	return err
 }
@@ -188,7 +188,7 @@ func InsertUserBalance(userSub string) error {
 	_, err := conn.PutItem(context.TODO(), &param)
 
 	if err != nil {
-		log.Warn().Msgf("Could not insert balance item", err)
+		log.Warn().Msgf("Could not insert balance item %v", err)
 	}
 	return err
 }
