@@ -149,7 +149,7 @@ Body:
         "name": "asjkdas",
         "version": "3.21.1"
     },
-    "env-vars": {
+    "env_vars": {
         "<var name>": "<var value>",
         ...
     },

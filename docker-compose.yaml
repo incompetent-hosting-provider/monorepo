@@ -2,6 +2,21 @@ version: '3'
 
 services:
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ./docker/rabbitmq/data/:/var/lib/rabbitmq/
+        - ./docker/rabbitmq/log/:/var/log/rabbitmq
+    healthcheck:
+        test: ["CMD", "wget", "-O", "-", " http://localhost:15672/"]
+        interval: 1m30s
+        timeout: 10s
+        retries: 3
+        start_period: 2m
+
   keycloak:
     #image: quay.io/keycloak/keycloak:22.0.5
     build: ./keycloak
@@ -43,6 +58,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_SESSION_TOKEN=dummy
       - KEYCLOAK_CERT_ENDPOINT_URL=http://keycloak:8080/realms/ihp-realm/protocol/openid-connect/certs
+      - MQ_CONN_STRING=amqp://guest:guest@rabbitmq:5672/
     healthcheck:
       test: curl --fail http://localhost:8081/health || exit 1
       interval: 60s

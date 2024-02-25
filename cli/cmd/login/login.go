@@ -1,36 +1,58 @@
 package login
 
 import (
-	"cli/internal/services/authentication"
+	"cli/cmd"
+	"cli/internal/authentication"
+	"cli/internal/utils"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	cmd.RootCmd.AddCommand(loginCmd)
+}
+
 // Login Command
 //
 // Allows the user to login to the IHP CLI using keycloak
-var LoginCmd = &cobra.Command{
+var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to the IHP CLI",
 	Long:  "Login to the IHP CLI via Keycloak",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := authentication.Login(); err != nil {
-			fmt.Println("Something went wrong while logging in")
-			fmt.Println(err)
-			os.Exit(1)
+		if auth := authentication.GetCurrentAuthentication(); auth != nil {
+			fmt.Println("You are already logged in.")
+			return
 		}
 
-		_, err := authentication.GetSessionToken()
+		server, err := utils.GetCallbackServer()
 		if err != nil {
-			fmt.Println("Something went wrong while getting the session token after login...")
-			fmt.Println("Please try again")
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Println("Failed to start a callback server to login. Please try again.")
+			return
+		}
+		defer server.Close()
+
+		result := make(chan error)
+		go authentication.PerformTokenExchange(server, result)
+
+		addr := server.Addr().String()
+		redirectURL := fmt.Sprintf("http://%s", addr)
+		url := authentication.DefaultKeycloakConfig.GetLoginURL(redirectURL)
+
+		err = utils.OpenBrowser(url)
+		if err != nil {
+			fmt.Println("Failed to open the browser. Please open the following URL manually:")
+			fmt.Println(url)
 		}
 
-		fmt.Println("Login successful! You can now use the IHP-CLI!.")
-		os.Exit(0)
+		err = <-result
+		if err != nil {
+			fmt.Println("Something went wrong during the login process.")
+			fmt.Println(err.Error())
+			fmt.Println("Please try again. If the problem persists, please contact the support.")
+		}
+
+		fmt.Println("Successfully logged in.")
 	},
 }
