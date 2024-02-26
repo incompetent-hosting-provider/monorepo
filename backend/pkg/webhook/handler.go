@@ -1,8 +1,8 @@
 package webhook
 
 import (
+	db_payment "incompetent-hosting-provider/backend/pkg/db/tables/payment"
 	"incompetent-hosting-provider/backend/pkg/util"
-	db_payment "incompetent-hosting-provider/backend/pkg/db/tables"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -55,20 +55,20 @@ func WebhookHandler(c *gin.Context) {
 }
 
 func handleUserRegistration(userId string) {
-    db_payment.InsertUserBalance(userId) // Insert user balance
-    logUserBalance(userId) // Log user balance
+	db_payment.InsertUserBalance(userId) // Insert user balance
+	logUserBalance(userId)               // Log user balance
 }
 
 func handleUserDeletion(userId string) {
-    db_payment.DeleteUserBalance(userId) // Delete user balance
-    logUserBalance(userId) // Log user balance
+	db_payment.DeleteUserBalance(userId) // Delete user balance
+	logUserBalance(userId)               // Log user balance
 }
 
 func logUserBalance(userId string) {
-    userBalance1, err := db_payment.GetUserBalance(userId)
-    if err != nil {
-        log.Error().Err(err).Msg("Failed to get user balance")
-        return
-    }
-    log.Info().Msgf("logUserBalance - User balance: %v", userBalance1)
+	userBalance1, err := db_payment.GetUserBalance(userId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get user balance")
+		return
+	}
+	log.Info().Msgf("logUserBalance - User balance: %v", userBalance1)
 }

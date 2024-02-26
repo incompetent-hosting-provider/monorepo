@@ -2,6 +2,7 @@ package instances
 
 import (
 	"incompetent-hosting-provider/backend/pkg/constants"
+	db_instances "incompetent-hosting-provider/backend/pkg/db/tables/instances"
 	"incompetent-hosting-provider/backend/pkg/mq_handler"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"net/http"
@@ -82,6 +83,8 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	c.JSON(http.StatusAccepted, CreateContainerResponse{
 		ContainerId: containerId,
 	})
+
+	log.Debug().Msgf("%i", db_instances.X)
 
 }
 

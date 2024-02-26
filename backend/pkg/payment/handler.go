@@ -2,7 +2,7 @@ package payment
 
 import (
 	"incompetent-hosting-provider/backend/pkg/constants"
-	db_payment "incompetent-hosting-provider/backend/pkg/db/tables"
+	db_payment "incompetent-hosting-provider/backend/pkg/db/tables/payment"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"net/http"
 
