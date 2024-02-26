@@ -5,6 +5,7 @@ import (
 	"incompetent-hosting-provider/backend/pkg/instances"
 	"incompetent-hosting-provider/backend/pkg/payment"
 	"incompetent-hosting-provider/backend/pkg/user"
+	"incompetent-hosting-provider/backend/pkg/util"
 	"incompetent-hosting-provider/backend/pkg/webhook"
 
 	docs "incompetent-hosting-provider/backend/docs"
@@ -19,7 +20,11 @@ import (
 )
 
 func ConfigureEndpoints() *gin.Engine {
+
 	log.Info().Msg("Setting up gin")
+	// Disable request logging from gin itself
+	gin.SetMode(gin.ReleaseMode)
+
 	ginEngine := gin.New()
 	authMiddleware := auth.GetAuthMiddleware()
 	configureGlobalMiddleWares(ginEngine)
@@ -39,7 +44,6 @@ func configureGlobalMiddleWares(ginEngine *gin.Engine) {
 	p.Use(ginEngine)
 	p.SetListenAddress("/metrics")
 }
-
 
 func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
 	log.Info().Msg("Setting up GET endpoints")
@@ -64,18 +68,19 @@ func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddl
 	ginEngine.POST("/instances/custom", authMiddleware.AuthFunc, instances.CreateCustomContainerHandler)
 }
 
-func configureDeleteEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware){
+func configureDeleteEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {
 	log.Info().Msg("Setting up DELETE endpoints")
 
 	ginEngine.DELETE("/instances/:containerId", authMiddleware.AuthFunc, instances.DeleteContainerHandler)
 }
 
 func configureSwagger(ginEngine *gin.Engine) {
-	if gin.Mode() != gin.ReleaseMode {
+	mode := util.GetStringEnvWithDefault("IS_PROD", "false")
+	if mode == "true" {
+		log.Info().Msg("Not serving swagger in release mode")
+	} else {
 		log.Info().Msgf("Serving with Swagger version %s", docs.SwaggerInfo.Version)
 
 		ginEngine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	} else {
-		log.Info().Msg("Not serving swagger in release mode")
 	}
 }

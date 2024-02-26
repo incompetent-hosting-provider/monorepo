@@ -1,12 +1,14 @@
 package instances
 
 import (
+	"errors"
 	"incompetent-hosting-provider/backend/pkg/constants"
 	db_instances "incompetent-hosting-provider/backend/pkg/db/tables/instances"
 	"incompetent-hosting-provider/backend/pkg/mq_handler"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -33,6 +35,30 @@ type CreateCustomContainerBody struct {
 
 type CreateContainerResponse struct {
 	ContainerId string `json:"id"`
+}
+
+type InstanceInfo struct {
+	Type               string                    `json:"type"`
+	ContainerName      string                    `json:"name"`
+	ContainerId        string                    `json:"id"`
+	ContainerImageData ContainerImageDescription `json:"container image"`
+	InstanceStatus     string                    `json:"status"`
+}
+
+type InstanceInfoDetailedResponse struct {
+	Type               string                    `json:"type"`
+	ContainerName      string                    `json:"name"`
+	ContainerId        string                    `json:"id"`
+	ContainerImageData ContainerImageDescription `json:"container image"`
+	InstanceStatus     string                    `json:"status"`
+	StartedAt          string                    `json:"started_at"`
+	CreatedAt          string                    `json:"created_at"`
+	ContainerPorts     []int                     `json:"open_ports"`
+	Description        string                    `json:"description"`
+}
+
+type InstancesInfoReponse struct {
+	Instances []InstanceInfo `json:"instances"`
 }
 
 // godoc
@@ -81,14 +107,14 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	}
 
 	db_instances.InsertInstance(db_instances.InstancesTable{
-		UserSub: userSub,
-		ContainerUUID: containerId,
-		ContainerPorts: []int{},
+		UserSub:              userSub,
+		ContainerUUID:        containerId,
+		ContainerPorts:       []int{},
 		ContainerDescription: createRequest.Description,
-		ContainerName: createRequest.ContainerName,
-		ImageName: "asda",
-		ImageTag: "ajkdhas",
-		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+		ContainerName:        createRequest.ContainerName,
+		ImageName:            "asda",
+		ImageTag:             "ajkdhas",
+		InstanceStatus:       db_instances.STATUS_VALUE_SCHEDULED,
 	})
 
 	c.JSON(http.StatusAccepted, CreateContainerResponse{
@@ -145,17 +171,21 @@ func CreateCustomContainerHandler(c *gin.Context) {
 		return
 	}
 
-
-	db_instances.InsertInstance(db_instances.InstancesTable{
-		UserSub: userSub,
-		ContainerUUID: containerId,
-		ContainerPorts: createRequest.Ports,
+	err = db_instances.InsertInstance(db_instances.InstancesTable{
+		UserSub:              userSub,
+		ContainerUUID:        containerId,
+		ContainerPorts:       createRequest.Ports,
 		ContainerDescription: createRequest.Description,
-		ContainerName: createRequest.ContainerName,
-		ImageName: createRequest.Image.ImageName,
-		ImageTag: createRequest.Image.Tag,
-		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+		ContainerName:        createRequest.ContainerName,
+		ImageName:            createRequest.Image.ImageName,
+		ImageTag:             createRequest.Image.Tag,
+		InstanceStatus:       db_instances.STATUS_VALUE_SCHEDULED,
 	})
+
+	if err != nil {
+		util.ThrowInternalServerErrorException(c, "Could not save item at the current time")
+		return
+	}
 
 	c.JSON(http.StatusAccepted, CreateContainerResponse{
 		ContainerId: containerId,
@@ -200,7 +230,7 @@ func DeleteContainerHandler(c *gin.Context) {
 	}
 
 	err = db_instances.DeleteInstanceById(userId, containerId)
-	if err != nil{
+	if err != nil {
 		util.ThrowInternalServerErrorException(c, "Could not delete entry at this time")
 	}
 
@@ -208,10 +238,10 @@ func DeleteContainerHandler(c *gin.Context) {
 }
 
 // godoc
-// @Summary 				  	Get all user instances	
+// @Summary 				  	Get all user instances
 //
 // @Schemes
-// @Description 				Get all instances for current user ignoring the status	
+// @Description 				Get all instances for current user ignoring the status
 // @Tags 						instances
 //
 // @Security					BearerAuth
@@ -222,15 +252,58 @@ func DeleteContainerHandler(c *gin.Context) {
 // @Failure						500 {object} util.ErrorResponse
 //
 // @Router /instances [get]
-func GetUserInstances(c *gin.Context){
+func GetUserInstances(c *gin.Context) {
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	_,err := db_instances.GetAllUserInstances(userId)
+	instances, err := db_instances.GetAllUserInstances(userId)
 
-	if err != nil{
-		util.ThrowInternalServerErrorException(c,"Could not fetch data")
+	if err != nil {
+		util.ThrowInternalServerErrorException(c, "Could not fetch data")
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, InstancesInfoReponse{
+		Instances: serializeInstanceResponses(instances),
+	})
+}
+
+// godoc
+// @Summary 				  	Get instance details
+//
+// @Schemes
+// @Description 				Get details of a single instance by id
+// @Tags 						instances
+//
+// @Security					BearerAuth
+//
+// @Param   containerId     path    string     true        "Container Id"
+//
+// @Success 					200 {string} string	"accepted"
+//
+// @Failure						401 {object} util.ErrorResponse
+// @Failure						404 {object} util.ErrorResponse
+// @Failure						500 {object} util.ErrorResponse
+//
+// @Router /instances/:containerId [get]
+func GetInstance(c *gin.Context) {
+	containerId := c.Param("containerId")
+	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+
+	if containerId == "" {
+		util.ThrowBadRequestException(c, "No valid containerId passed")
+	}
+
+	instance, err := db_instances.GetInstanceById(userId, containerId)
+
+	if err != nil {
+		var notFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &notFoundErr) {
+			util.ThrowNotFoundException(c, "Could not find item with given id")
+			return
+		}
+		util.ThrowInternalServerErrorException(c, "Could not delete entry at this time")
+		return
+	}
+
+	c.JSON(http.StatusOK, serializeDetailedInstanceResponse(instance))
 }

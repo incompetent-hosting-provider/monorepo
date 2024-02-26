@@ -10,17 +10,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func init(){
+	// Load env
+	godotenv.Load()
+	util.InitLogger()
+}
+
 // Swagger definitions
 
 //	@securityDefinitions.apikey BearerAuth
 //	@in							header
 //	@name						Authorization
 //	@description				Auth token security
-
 func main() {
-	// Load env
-	godotenv.Load()
-	util.InitLogger()
 	err := db.InitDbConn()
 	if err != nil {
 		log.Fatal().Msgf("%s", err)
