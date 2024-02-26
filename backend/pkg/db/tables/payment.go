@@ -123,16 +123,72 @@ func GetUserBalance(userSub string) (int, error) {
 	var balance int
 	val, err := conn.GetItem(context.TODO(), &param)
 
-	// Is this ideal? I am not sure
-	if err != nil {
-		var notFoundEx *types.ResourceNotFoundException
-		// If user not in table -> Assume that user has never added currency yet i.e. has a current balance of zero
-		if errors.As(err, &notFoundEx) {
-			err = nil
+	if err == nil {
+		if val.Item["Balance"] == nil {
+			log.Warn().Msg("There was an error parsing the balance for a user. This may indicate corrupt data.")
+			// Set balance to 0 to avoid panic and still return a value
+			// This edge case can also occur if the user is not created in the balance table, therefore throwing an internal server error would (for now) not be sufficient.
+			// For the user to get here the JWT has to be valid -> the user likely exists on the Keycloak side of things
+			return 0, nil
 		}
-		balance = 0
-	} else {
 		balance, _ = strconv.Atoi(val.Item["Balance"].(*types.AttributeValueMemberN).Value)
+	} else {
+		var notFoundEx *types.ResourceNotFoundException
+		// If user not in table -> Assume that the user has never added currency yet i.e. has a current balance of zero
+		if errors.As(err, &notFoundEx) {
+			log.Warn().Msg("User not found in the balance table. Setting balance to 0.")
+			balance = 0
+			err = nil
+		} else {
+			log.Error().Err(err).Msg("Error getting user balance")
+		}
 	}
 	return balance, err
+}
+
+func DeleteUserBalance(userSub string) error {
+
+	// If in test run -> Skip and return nil
+	if util.IsTestRun() {
+		return nil
+	}
+
+	conn := db.GetDynamoConn()
+
+	param := dynamodb.DeleteItemInput{
+		Key:       map[string]types.AttributeValue{"UserSub": &types.AttributeValueMemberS{Value: userSub}},
+		TableName: aws.String(TABLE_NAME),
+	}
+
+	_, err := conn.DeleteItem(context.TODO(), &param)
+
+	if err != nil {
+		log.Warn().Msgf("Could not delete balance item %v", err)
+	}
+	return err
+}
+
+func InsertUserBalance(userSub string) error {
+
+	// If in test run -> Skip and return nil
+	if util.IsTestRun() {
+		return nil
+	}
+
+	conn := db.GetDynamoConn()
+
+	param := dynamodb.PutItemInput{
+		Item: map[string]types.AttributeValue{
+			"UserSub": &types.AttributeValueMemberS{Value: userSub},
+			"Balance": &types.AttributeValueMemberN{Value: "0"},
+		},
+		TableName: aws.String(TABLE_NAME),
+	}
+
+	_, err := conn.PutItem(context.TODO(), &param)
+
+	if err != nil {
+		log.Warn().Msgf("Could not insert balance item %v", err)
+	}
+	return err
 }
