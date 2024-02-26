@@ -52,6 +52,7 @@ func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddle
 
 	ginEngine.GET("/payment", authMiddleware.AuthFunc, payment.CreditFetchHandler)
 	ginEngine.GET("/user", authMiddleware.AuthFunc, user.UserFetchHandler)
+	ginEngine.GET("/instances", authMiddleware.AuthFunc, instances.GetUserInstances)
 }
 
 func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {

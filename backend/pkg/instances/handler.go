@@ -24,7 +24,7 @@ type ContainerImageDescription struct {
 }
 
 type CreateCustomContainerBody struct {
-	Containername string                    `json:"name"`
+	ContainerName string                    `json:"name"`
 	Description   string                    `json:"description"`
 	Image         ContainerImageDescription `json:"image"`
 	EnvVars       map[string]string         `json:"env_vars"`
@@ -56,7 +56,7 @@ type CreateContainerResponse struct {
 // @Router /instances/preset [post]
 func CreatePresetContainerHandler(c *gin.Context) {
 	// Use header set by middleware
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
 	var createRequest CreatePresetContainerBody
 
@@ -70,7 +70,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	containerId := uuid.NewString()
 
 	err = mq_handler.PublishPresetContainerStartEvent(mq_handler.PresetContainerStartEvent{
-		UserId:        userId,
+		UserId:        userSub,
 		ContainerUUID: containerId,
 		PresetId:      createRequest.Preset,
 	})
@@ -80,11 +80,20 @@ func CreatePresetContainerHandler(c *gin.Context) {
 		return
 	}
 
+	db_instances.InsertInstance(db_instances.InstancesTable{
+		UserSub: userSub,
+		ContainerUUID: containerId,
+		ContainerPorts: []int{},
+		ContainerDescription: createRequest.Description,
+		ContainerName: createRequest.ContainerName,
+		ImageName: "asda",
+		ImageTag: "ajkdhas",
+		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+	})
+
 	c.JSON(http.StatusAccepted, CreateContainerResponse{
 		ContainerId: containerId,
 	})
-
-	log.Debug().Msgf("%i", db_instances.X)
 
 }
 
@@ -109,7 +118,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 // @Router /instances/custom [post]
 func CreateCustomContainerHandler(c *gin.Context) {
 	// Use header set by middleware
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
 	var createRequest CreateCustomContainerBody
 
@@ -123,7 +132,7 @@ func CreateCustomContainerHandler(c *gin.Context) {
 	containerId := uuid.NewString()
 
 	err = mq_handler.PublishCustomContainerStartEvent(mq_handler.CustomContainerStartEvent{
-		UserId:            userId,
+		UserId:            userSub,
 		ContainerUUID:     containerId,
 		ContainerImage:    createRequest.Image.ImageName,
 		ContainerImageTag: createRequest.Image.Tag,
@@ -135,6 +144,18 @@ func CreateCustomContainerHandler(c *gin.Context) {
 		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
 		return
 	}
+
+
+	db_instances.InsertInstance(db_instances.InstancesTable{
+		UserSub: userSub,
+		ContainerUUID: containerId,
+		ContainerPorts: createRequest.Ports,
+		ContainerDescription: createRequest.Description,
+		ContainerName: createRequest.ContainerName,
+		ImageName: createRequest.Image.ImageName,
+		ImageTag: createRequest.Image.Tag,
+		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+	})
 
 	c.JSON(http.StatusAccepted, CreateContainerResponse{
 		ContainerId: containerId,
@@ -174,9 +195,42 @@ func DeleteContainerHandler(c *gin.Context) {
 	})
 
 	if err != nil {
-		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
+		util.ThrowServiceUnavailableException(c, "Could  schedule container deletion at the current time")
 		return
 	}
 
+	err = db_instances.DeleteInstanceById(userId, containerId)
+	if err != nil{
+		util.ThrowInternalServerErrorException(c, "Could not delete entry at this time")
+	}
+
 	c.Status(http.StatusAccepted)
+}
+
+// godoc
+// @Summary 				  	Get all user instances	
+//
+// @Schemes
+// @Description 				Get all instances for current user ignoring the status	
+// @Tags 						instances
+//
+// @Security					BearerAuth
+//
+// @Success 					202 {string} string	"accepted"
+//
+// @Failure						401 {object} util.ErrorResponse
+// @Failure						500 {object} util.ErrorResponse
+//
+// @Router /instances [get]
+func GetUserInstances(c *gin.Context){
+	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+
+	_,err := db_instances.GetAllUserInstances(userId)
+
+	if err != nil{
+		util.ThrowInternalServerErrorException(c,"Could not fetch data")
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

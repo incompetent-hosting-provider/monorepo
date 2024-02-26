@@ -1,4 +1,42 @@
 definitions:
+  instances.ContainerImageDescription:
+    properties:
+      name:
+        type: string
+      version:
+        type: string
+    type: object
+  instances.CreateContainerResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  instances.CreateCustomContainerBody:
+    properties:
+      description:
+        type: string
+      env_vars:
+        additionalProperties:
+          type: string
+        type: object
+      image:
+        $ref: '#/definitions/instances.ContainerImageDescription'
+      name:
+        type: string
+      ports:
+        items:
+          type: integer
+        type: array
+    type: object
+  instances.CreatePresetContainerBody:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      preset:
+        type: integer
+    type: object
   payment.BalanceIncreaseBody:
     properties:
       amount:
@@ -24,6 +62,136 @@ definitions:
 info:
   contact: {}
 paths:
+  /instances:
+    get:
+      description: Get all instances for current user ignoring the status
+      responses:
+        "202":
+          description: accepted
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all user instances
+      tags:
+      - instances
+  /instances/:containerId:
+    delete:
+      description: Delete container by ID
+      parameters:
+      - description: Container Id
+        in: path
+        name: containerId
+        required: true
+        type: string
+      responses:
+        "202":
+          description: accepted
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete container
+      tags:
+      - instances
+  /instances/custom:
+    post:
+      description: Start the container creation flow. This will schedule the creation
+        of said container
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/instances.CreateCustomContainerBody'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/instances.CreateContainerResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create container based on custom definition
+      tags:
+      - instances
+  /instances/preset:
+    post:
+      description: Start the container creation flow. This will schedule the creation
+        of said container
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/instances.CreatePresetContainerBody'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/instances.CreateContainerResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create container based on preset
+      tags:
+      - instances
   /payment:
     get:
       description: Get current user balance
@@ -84,6 +252,21 @@ paths:
       summary: Increase user balance
       tags:
       - payment
+  /spi-webhook:
+    get:
+      description: Handle keycloak SPI webhook events
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/payment.BalanceResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: SPI webhook handler
+      tags:
+      - webhook
   /user:
     get:
       description: Get user info

@@ -8,9 +8,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+
 	//	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 
 	"github.com/rs/zerolog/log"
+)
+
+const (
+	STATUS_VALUE_SCHEDULED = "Scheduled"
+	STATUS_VALUE_RUNNING="Running"
+	STATUS_VALUE_STOPPED = "Stopped"
 )
 
 const TABLE_NAME = "instances"
@@ -20,11 +27,13 @@ const X = 1
 type InstancesTable struct {
 	UserSub              string
 	InstanceId           string
+	ContainerUUID		string 
 	ContainerName        string
 	ContainerDescription string
 	ImageName            string
 	ImageTag             string
 	ContainerPorts       []int
+	InstanceStatus string
 }
 
 func init() {
@@ -53,19 +62,11 @@ func init() {
 			AttributeName: aws.String("UserSub"),
 			AttributeType: types.ScalarAttributeTypeS,
 		},
-		{
-			AttributeName: aws.String("ContainerId"),
-			AttributeType: types.ScalarAttributeTypeS,
-		},
 	}
 
 	keySchema := []types.KeySchemaElement{
 		{
 			AttributeName: aws.String("UserSub"),
-			KeyType:       types.KeyTypeHash,
-		},
-		{
-			AttributeName: aws.String("ContainerId"),
 			KeyType:       types.KeyTypeHash,
 		},
 	}
@@ -80,12 +81,13 @@ func init() {
 
 	InsertInstance(InstancesTable{
 		UserSub:              "test",
-		InstanceId:           "askjda",
 		ContainerName:        "test",
 		ContainerDescription: "test",
 		ImageName:            "test",
 		ImageTag:             "test",
+		ContainerUUID: "kjasdjkas",
 		ContainerPorts:       []int{1, 2, 4, 5},
+		InstanceStatus: "Starting",
 	})
 }
 
@@ -98,6 +100,8 @@ func InsertInstance(instanceItem InstancesTable) error {
 
 	conn := db.GetDynamoConn()
 
+	instanceItem.InstanceId = instanceItem.UserSub + instanceItem.ContainerUUID
+
 	//portItem, _ := dynamodbattribute.MarshalList(instanceItem.ContainerPorts)
 
 	param := dynamodb.PutItemInput{
@@ -108,6 +112,7 @@ func InsertInstance(instanceItem InstancesTable) error {
 			"ContainerDescription": &types.AttributeValueMemberS{Value: instanceItem.ContainerDescription},
 			"ImageName":            &types.AttributeValueMemberS{Value: instanceItem.ImageName},
 			"ImageTag":             &types.AttributeValueMemberS{Value: instanceItem.ImageTag},
+			"ContainerUUID": &types.AttributeValueMemberS{Value: instanceItem.ContainerUUID},
 			//"ContainerPorts":       portItem,
 		},
 		TableName: aws.String(TABLE_NAME),
@@ -120,5 +125,62 @@ func InsertInstance(instanceItem InstancesTable) error {
 	} else {
 		log.Warn().Msg("Created")
 	}
+	return err
+}
+
+
+func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
+
+	// If in test run -> Skip and return dummy values
+	if util.IsTestRun() {
+		return nil, nil
+	}
+
+	conn := db.GetDynamoConn()
+
+
+    params := &dynamodb.ScanInput{
+        TableName: aws.String(TABLE_NAME),
+        FilterExpression: aws.String("UserSub = :UserSub"),
+        ExpressionAttributeValues: map[string]types.AttributeValue{
+            ":UserSub": &types.AttributeValueMemberS{
+				Value: usersub,
+			},
+        },
+    }
+
+	var result []InstancesTable
+
+	scanResult, err := conn.Scan(context.TODO(), params)
+
+	if err != nil{
+		return nil, err
+	}
+
+	    for _, item := range scanResult.Items {
+			log.Warn().Msgf("%v", item)
+    }
+
+	return result, err
+}	
+
+
+func DeleteInstanceById(userSub string, containerUUID string)(error){
+
+	if util.IsTestRun(){
+		return nil
+	}
+
+	instanceId := userSub + containerUUID
+
+	conn := db.GetDynamoConn()
+
+	params := &dynamodb.DeleteItemInput{
+		TableName: aws.String(TABLE_NAME),
+		Key: map[string]types.AttributeValue{"InstanceId": &types.AttributeValueMemberS{Value: instanceId}},
+	}
+
+	_, err := conn.DeleteItem(context.TODO(), params)
+
 	return err
 }
