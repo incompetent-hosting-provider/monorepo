@@ -7,6 +7,7 @@ import (
 	"incompetent-hosting-provider/backend/pkg/mq_handler"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"net/http"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
@@ -106,16 +107,25 @@ func CreatePresetContainerHandler(c *gin.Context) {
 		return
 	}
 
-	db_instances.InsertInstance(db_instances.InstancesTable{
+	err = db_instances.InsertInstance(db_instances.InstancesTable{
 		UserSub:              userSub,
 		ContainerUUID:        containerId,
 		ContainerPorts:       []int{},
 		ContainerDescription: createRequest.Description,
 		ContainerName:        createRequest.ContainerName,
-		ImageName:            "asda",
-		ImageTag:             "ajkdhas",
-		InstanceStatus:       db_instances.STATUS_VALUE_SCHEDULED,
+		Image: db_instances.ImageSpecification{
+			Name: "placeholder",
+			Tag:  "placeholder",
+		},
+		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+		CreatedAt:      time.Now().Format(time.RFC3339),
+		StartedAt:      "N/A",
 	})
+
+	if err != nil {
+		util.ThrowInternalServerErrorException(c, "Could not save item at the current time")
+		return
+	}
 
 	c.JSON(http.StatusAccepted, CreateContainerResponse{
 		ContainerId: containerId,
@@ -177,9 +187,14 @@ func CreateCustomContainerHandler(c *gin.Context) {
 		ContainerPorts:       createRequest.Ports,
 		ContainerDescription: createRequest.Description,
 		ContainerName:        createRequest.ContainerName,
-		ImageName:            createRequest.Image.ImageName,
-		ImageTag:             createRequest.Image.Tag,
-		InstanceStatus:       db_instances.STATUS_VALUE_SCHEDULED,
+		Image: db_instances.ImageSpecification{
+			Name: createRequest.Image.ImageName,
+			Tag:  createRequest.Image.Tag,
+		},
+		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+		Type:           db_instances.TYPE_CUSTOM,
+		CreatedAt:      time.Now().Format(time.RFC3339),
+		StartedAt:      "N/A",
 	})
 
 	if err != nil {

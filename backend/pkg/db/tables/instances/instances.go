@@ -4,9 +4,9 @@ import (
 	"context"
 	"incompetent-hosting-provider/backend/pkg/db"
 	"incompetent-hosting-provider/backend/pkg/util"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
@@ -19,22 +19,29 @@ const (
 	STATUS_VALUE_SCHEDULED = "Scheduled"
 	STATUS_VALUE_RUNNING   = "Running"
 	STATUS_VALUE_STOPPED   = "Stopped"
+	TYPE_CUSTOM            = "Custom"
+	TYPE_PRESET            = "Preset"
 )
 
 const TABLE_NAME = "instances"
 
+type ImageSpecification struct {
+	Tag  string `dynamodbav:"tag"`
+	Name string `dynamodbav:"name"`
+}
+
 type InstancesTable struct {
-	UserSub              string
-	InstanceId           string
-	ContainerUUID        string
-	ContainerName        string
-	ContainerDescription string
-	ImageName            string
-	ImageTag             string
-	ContainerPorts       []int
-	InstanceStatus       string
-	CreatedAt            string
-	StartedAt            string
+	UserSub              string             `dynamodbav:"usersub"`
+	InstanceId           string             `dynamodbav:"instanceid"`
+	ContainerUUID        string             `dynamodbav:"containeruuid"`
+	ContainerName        string             `dynamodbav:"containername"`
+	ContainerDescription string             `dynamodbav:"containerdescription"`
+	Image                ImageSpecification `dynamodbav:"image"`
+	ContainerPorts       []int              `dynamodbav:"containerports"`
+	InstanceStatus       string             `dynamodbav:"instancestatus"`
+	CreatedAt            string             `dynamodbav:"createdat"`
+	StartedAt            string             `dynamodbav:"startedat"`
+	Type                 string             `dynamodbav:"type"`
 }
 
 func init() {
@@ -60,13 +67,13 @@ func init() {
 
 	contents := []types.AttributeDefinition{
 		{
-			AttributeName: aws.String("InstanceId"),
+			AttributeName: aws.String("instanceid"),
 			AttributeType: types.ScalarAttributeTypeS,
 		},
 	}
 	keySchema := []types.KeySchemaElement{
 		{
-			AttributeName: aws.String("InstanceId"),
+			AttributeName: aws.String("instanceid"),
 			KeyType:       types.KeyTypeHash,
 		},
 	}
@@ -78,17 +85,6 @@ func init() {
 	} else {
 		log.Debug().Msgf("Table %v was created.", TABLE_NAME)
 	}
-
-	InsertInstance(InstancesTable{
-		UserSub:              "test",
-		ContainerName:        "test",
-		ContainerDescription: "test",
-		ImageName:            "test",
-		ImageTag:             "test",
-		ContainerUUID:        "kjasdjkas",
-		ContainerPorts:       []int{1, 2, 4, 5},
-		InstanceStatus:       "Starting",
-	})
 }
 
 func InsertInstance(instanceItem InstancesTable) error {
@@ -102,29 +98,21 @@ func InsertInstance(instanceItem InstancesTable) error {
 
 	instanceItem.InstanceId = instanceItem.UserSub + instanceItem.ContainerUUID
 
-	//portItem, _ := dynamodbattribute.MarshalList(instanceItem.ContainerPorts)
+	marshalledItem, _ := attributevalue.MarshalMap(instanceItem)
+
+	log.Info().Msgf("%v", marshalledItem["image"])
+
+	log.Info().Msgf("%v", marshalledItem)
 
 	param := dynamodb.PutItemInput{
-		Item: map[string]types.AttributeValue{
-			"UserSub":              &types.AttributeValueMemberS{Value: instanceItem.UserSub},
-			"InstanceId":           &types.AttributeValueMemberS{Value: instanceItem.InstanceId},
-			"ContainerName":        &types.AttributeValueMemberS{Value: instanceItem.ContainerName},
-			"ContainerDescription": &types.AttributeValueMemberS{Value: instanceItem.ContainerDescription},
-			"ImageName":            &types.AttributeValueMemberS{Value: instanceItem.ImageName},
-			"ImageTag":             &types.AttributeValueMemberS{Value: instanceItem.ImageTag},
-			"ContainerUUID":        &types.AttributeValueMemberS{Value: instanceItem.ContainerUUID},
-			//"ContainerPorts":       portItem,
-			"InstanceStatus": &types.AttributeValueMemberS{Value: instanceItem.InstanceStatus},
-			"CreatedAt":      &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339)},
-			"StartedAt":      &types.AttributeValueMemberS{Value: "N/A"},
-		},
 		TableName: aws.String(TABLE_NAME),
+		Item:      marshalledItem,
 	}
 
 	_, err := conn.PutItem(context.TODO(), &param)
 
 	if err != nil {
-		log.Warn().Msgf("Could not insert balance item %v", err)
+		log.Warn().Msgf("Could not insert instance item %v", err)
 	} else {
 		log.Warn().Msg("Created")
 	}
@@ -142,9 +130,9 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 
 	params := &dynamodb.ScanInput{
 		TableName:        aws.String(TABLE_NAME),
-		FilterExpression: aws.String("UserSub = :UserSub"),
+		FilterExpression: aws.String("usersub = :usersub"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":UserSub": &types.AttributeValueMemberS{
+			":usersub": &types.AttributeValueMemberS{
 				Value: usersub,
 			},
 		},
@@ -162,9 +150,13 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 			return nil, err
 		}
 
-		// Print the items
+		// Parse the items
 		for _, item := range scanResult.Items {
-			parsedItem := parseScanResultToStruct(item)
+			var parsedItem InstancesTable
+			err = attributevalue.UnmarshalMap(item, parsedItem)
+			if err != nil {
+				log.Warn().Msgf("Could not parse item due to an error: %v", err)
+			}
 			log.Warn().Msgf("%v", parsedItem)
 			result = append(result, parsedItem)
 		}
@@ -189,8 +181,8 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 	params := dynamodb.GetItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Key: map[string]types.AttributeValue{
-			"UserSub":       &types.AttributeValueMemberS{Value: userSub},
-			"ContainerUUID": &types.AttributeValueMemberS{Value: containerUUID},
+			"usersub":       &types.AttributeValueMemberS{Value: userSub},
+			"containeruuid": &types.AttributeValueMemberS{Value: containerUUID},
 		},
 	}
 
@@ -201,7 +193,15 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 		return InstancesTable{}, err
 	}
 
-	return parseScanResultToStruct(instance.Item), err
+	var parsedInstance InstancesTable
+
+	err = attributevalue.UnmarshalMap(instance.Item, parsedInstance)
+
+	if err != nil {
+		log.Warn().Msgf("Could not parse item due to an error: %v", err)
+	}
+
+	return parsedInstance, err
 }
 
 func DeleteInstanceById(userSub string, containerUUID string) error {
@@ -216,7 +216,7 @@ func DeleteInstanceById(userSub string, containerUUID string) error {
 
 	params := &dynamodb.DeleteItemInput{
 		TableName: aws.String(TABLE_NAME),
-		Key:       map[string]types.AttributeValue{"InstanceId": &types.AttributeValueMemberS{Value: instanceId}},
+		Key:       map[string]types.AttributeValue{"instanceid": &types.AttributeValueMemberS{Value: instanceId}},
 	}
 
 	_, err := conn.DeleteItem(context.TODO(), params)

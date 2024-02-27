@@ -12,8 +12,8 @@ func serializeInstanceResponses(instances []db_instances.InstancesTable) []Insta
 			ContainerId:    instance.ContainerUUID,
 			InstanceStatus: instance.InstanceStatus,
 			ContainerImageData: ContainerImageDescription{
-				Tag:       instance.ImageTag,
-				ImageName: instance.ImageName,
+				Tag:       instance.Image.Tag,
+				ImageName: instance.Image.Name,
 			},
 		})
 	}
@@ -27,8 +27,8 @@ func serializeDetailedInstanceResponse(instance db_instances.InstancesTable) Ins
 		ContainerId:    instance.ContainerUUID,
 		InstanceStatus: instance.InstanceStatus,
 		ContainerImageData: ContainerImageDescription{
-			Tag:       instance.ImageTag,
-			ImageName: instance.ImageName,
+			Tag:       instance.Image.Tag,
+			ImageName: instance.Image.Name,
 		},
 		CreatedAt:      instance.CreatedAt,
 		StartedAt:      instance.StartedAt,
