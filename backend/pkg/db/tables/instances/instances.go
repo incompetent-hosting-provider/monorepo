@@ -100,10 +100,6 @@ func InsertInstance(instanceItem InstancesTable) error {
 
 	marshalledItem, _ := attributevalue.MarshalMap(instanceItem)
 
-	log.Info().Msgf("%v", marshalledItem["image"])
-
-	log.Info().Msgf("%v", marshalledItem)
-
 	param := dynamodb.PutItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Item:      marshalledItem,
@@ -113,13 +109,12 @@ func InsertInstance(instanceItem InstancesTable) error {
 
 	if err != nil {
 		log.Warn().Msgf("Could not insert instance item %v", err)
-	} else {
-		log.Warn().Msg("Created")
 	}
+
 	return err
 }
 
-func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
+func GetAllUserInstances(userSub string) ([]InstancesTable, error) {
 
 	// If in test run -> Skip and return dummy values
 	if util.IsTestRun() {
@@ -133,7 +128,7 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 		FilterExpression: aws.String("usersub = :usersub"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":usersub": &types.AttributeValueMemberS{
-				Value: usersub,
+				Value: userSub,
 			},
 		},
 	}
@@ -141,8 +136,6 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 	var result []InstancesTable
 
 	for {
-
-		log.Info().Msg("iteration")
 
 		scanResult, err := conn.Scan(context.TODO(), params)
 		if err != nil {
@@ -157,7 +150,6 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 			if err != nil {
 				log.Warn().Msgf("Could not parse item due to an error: %v", err)
 			}
-			log.Warn().Msgf("%v", parsedItem)
 			result = append(result, parsedItem)
 		}
 
@@ -173,8 +165,6 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 
 func GetInstanceById(userSub string, containerUUID string) (InstancesTable, error) {
 
-	log.Warn().Msg("askdjlaskldhasdjashjdk")
-
 	if util.IsTestRun() {
 		return InstancesTable{}, nil
 	}
@@ -188,8 +178,6 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 		},
 		ConsistentRead: aws.Bool(true),
 	}
-
-	log.Warn().Msgf("%v %v", params, getInstanceId(userSub, containerUUID))
 
 	instance, err := conn.GetItem(context.TODO(), &params)
 
@@ -205,8 +193,6 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 	if err != nil {
 		log.Warn().Msgf("Could not parse item due to an error: %v", err)
 	}
-
-	log.Info().Msgf("%v", parsedInstance)
 
 	return parsedInstance, err
 }

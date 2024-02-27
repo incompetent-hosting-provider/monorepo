@@ -227,16 +227,16 @@ func CreateCustomContainerHandler(c *gin.Context) {
 //
 // @Router /instances/{containerId} [delete]
 func DeleteContainerHandler(c *gin.Context) {
-	containerId := c.Param("containerId")
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	containerUUID := c.Param("containerId")
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	if containerId == "" {
+	if containerUUID == "" {
 		util.ThrowBadRequestException(c, "No valid containerId passed")
 	}
 
 	err := mq_handler.PublishDeleteContainerEvent(mq_handler.DeleteContainerEvent{
-		ContainerUUID: containerId,
-		UserId:        userId,
+		ContainerUUID: containerUUID,
+		UserId:        userSub,
 	})
 
 	if err != nil {
@@ -244,7 +244,7 @@ func DeleteContainerHandler(c *gin.Context) {
 		return
 	}
 
-	err = db_instances.DeleteInstanceById(userId, containerId)
+	err = db_instances.DeleteInstanceById(userSub, containerUUID)
 	if err != nil {
 		util.ThrowInternalServerErrorException(c, "Could not delete entry at this time")
 	}
@@ -268,9 +268,9 @@ func DeleteContainerHandler(c *gin.Context) {
 //
 // @Router /instances [get]
 func GetUserInstances(c *gin.Context) {
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	instances, err := db_instances.GetAllUserInstances(userId)
+	instances, err := db_instances.GetAllUserInstances(userSub)
 
 	if err != nil {
 		util.ThrowInternalServerErrorException(c, "Could not fetch data")
@@ -301,14 +301,14 @@ func GetUserInstances(c *gin.Context) {
 //
 // @Router /instances/{containerId} [get]
 func GetInstance(c *gin.Context) {
-	containerId := c.Param("containerId")
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	containerUUID := c.Param("containerId")
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	if containerId == "" {
+	if containerUUID == "" {
 		util.ThrowBadRequestException(c, "No valid containerId passed")
 	}
 
-	instance, err := db_instances.GetInstanceById(userId, containerId)
+	instance, err := db_instances.GetInstanceById(userSub, containerUUID)
 
 	if err != nil {
 		var notFoundErr *types.ResourceNotFoundException
