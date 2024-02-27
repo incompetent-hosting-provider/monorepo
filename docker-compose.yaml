@@ -2,6 +2,7 @@ version: '3'
 
 volumes:
   prometheus_data: {}
+  grafana-storage: {}
 
 networks:
   monitoring:
@@ -74,7 +75,6 @@ services:
       timeout: 10s
 
   #prometheus
-
   prometheus:
     image: prom/prometheus
     ports:
@@ -86,21 +86,14 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
 
-  
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
+  #grafana
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
     restart: unless-stopped
+    ports:
+      - '3000:3000'
     volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-    expose:
-      - 9100
-    networks:
-      - monitoring
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/dashboard:/etc/grafana/dashboard
+      - ./grafana/datasource:/etc/grafana/datasource
