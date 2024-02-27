@@ -153,7 +153,7 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 		// Parse the items
 		for _, item := range scanResult.Items {
 			var parsedItem InstancesTable
-			err = attributevalue.UnmarshalMap(item, parsedItem)
+			err = attributevalue.UnmarshalMap(item, &parsedItem)
 			if err != nil {
 				log.Warn().Msgf("Could not parse item due to an error: %v", err)
 			}
@@ -195,7 +195,7 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 
 	var parsedInstance InstancesTable
 
-	err = attributevalue.UnmarshalMap(instance.Item, parsedInstance)
+	err = attributevalue.UnmarshalMap(instance.Item, &parsedInstance)
 
 	if err != nil {
 		log.Warn().Msgf("Could not parse item due to an error: %v", err)
