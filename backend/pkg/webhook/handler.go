@@ -65,10 +65,10 @@ func handleUserDeletion(userId string) {
 }
 
 func logUserBalance(userId string) {
-	userBalance1, err := db_payment.GetUserBalance(userId)
+	userBalance, err := db_payment.GetUserBalance(userId)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get user balance")
 		return
 	}
-	log.Info().Msgf("logUserBalance - User balance: %v", userBalance1)
+	log.Debug().Msgf("logUserBalance - User balance: %v", userBalance)
 }
