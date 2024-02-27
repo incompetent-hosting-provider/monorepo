@@ -225,7 +225,7 @@ func CreateCustomContainerHandler(c *gin.Context) {
 // @Failure						503 {object} util.ErrorResponse
 // @Failure						500 {object} util.ErrorResponse
 //
-// @Router /instances/:containerId [delete]
+// @Router /instances/{containerId} [delete]
 func DeleteContainerHandler(c *gin.Context) {
 	containerId := c.Param("containerId")
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
@@ -299,7 +299,7 @@ func GetUserInstances(c *gin.Context) {
 // @Failure						404 {object} util.ErrorResponse
 // @Failure						500 {object} util.ErrorResponse
 //
-// @Router /instances/:containerId [get]
+// @Router /instances/{containerId} [get]
 func GetInstance(c *gin.Context) {
 	containerId := c.Param("containerId")
 	userId := c.Request.Header.Get(constants.USER_ID_HEADER)

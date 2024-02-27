@@ -96,7 +96,7 @@ func InsertInstance(instanceItem InstancesTable) error {
 
 	conn := db.GetDynamoConn()
 
-	instanceItem.InstanceId = instanceItem.UserSub + instanceItem.ContainerUUID
+	instanceItem.InstanceId = getInstanceId(instanceItem.UserSub, instanceItem.ContainerUUID)
 
 	marshalledItem, _ := attributevalue.MarshalMap(instanceItem)
 
@@ -172,6 +172,9 @@ func GetAllUserInstances(usersub string) ([]InstancesTable, error) {
 }
 
 func GetInstanceById(userSub string, containerUUID string) (InstancesTable, error) {
+
+	log.Warn().Msg("askdjlaskldhasdjashjdk")
+
 	if util.IsTestRun() {
 		return InstancesTable{}, nil
 	}
@@ -181,10 +184,12 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 	params := dynamodb.GetItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Key: map[string]types.AttributeValue{
-			"usersub":       &types.AttributeValueMemberS{Value: userSub},
-			"containeruuid": &types.AttributeValueMemberS{Value: containerUUID},
+			"instanceid": &types.AttributeValueMemberS{Value: getInstanceId(userSub, containerUUID)},
 		},
+		ConsistentRead: aws.Bool(true),
 	}
+
+	log.Warn().Msgf("%v %v", params, getInstanceId(userSub, containerUUID))
 
 	instance, err := conn.GetItem(context.TODO(), &params)
 
@@ -201,6 +206,8 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 		log.Warn().Msgf("Could not parse item due to an error: %v", err)
 	}
 
+	log.Info().Msgf("%v", parsedInstance)
+
 	return parsedInstance, err
 }
 
@@ -210,7 +217,7 @@ func DeleteInstanceById(userSub string, containerUUID string) error {
 		return nil
 	}
 
-	instanceId := userSub + containerUUID
+	instanceId := getInstanceId(userSub, containerUUID)
 
 	conn := db.GetDynamoConn()
 
