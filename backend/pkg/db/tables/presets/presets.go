@@ -5,6 +5,7 @@ import (
 	"incompetent-hosting-provider/backend/pkg/db"
 	db_instances "incompetent-hosting-provider/backend/pkg/db/tables/instances"
 	"incompetent-hosting-provider/backend/pkg/util"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -16,10 +17,12 @@ import (
 const TABLE_NAME string = "presets"
 
 type PresetTable struct {
-	Image       db_instances.ImageSpecification `dynamodbav:"image"`
-	Name        string                          `dynamodbav:"name"`
-	Description string                          `dynamodbav:"description"`
-	PresetId    int                             `dynamodbav:"presetid"`
+	Image          db_instances.ImageSpecification `dynamodbav:"image"`
+	Name           string                          `dynamodbav:"name"`
+	Description    string                          `dynamodbav:"description"`
+	PresetId       int                             `dynamodbav:"presetid"`
+	ContainerPorts []int                           `dynamodbav:"containerports"`
+	RequiredEnv    []string                        `dynamodbav:"requiredenv"`
 }
 
 func init() {
@@ -83,6 +86,8 @@ func insertInitData() {
 			Name: "mysql",
 			Tag:  "latest",
 		},
+		ContainerPorts: []int{3306},
+		RequiredEnv:    []string{"MYSQL_ROOT_PASSWORD"},
 	})
 
 	if err != nil {
@@ -154,4 +159,36 @@ func GetAllPresets() ([]PresetTable, error) {
 	}
 
 	return result, nil
+}
+
+func GetPresetById(presetId int) (PresetTable, error) {
+
+	if util.IsTestRun() {
+		return PresetTable{}, nil
+	}
+
+	conn := db.GetDynamoConn()
+
+	params := &dynamodb.GetItemInput{
+		TableName: aws.String(TABLE_NAME),
+		Key: map[string]types.AttributeValue{
+			"presetid": &types.AttributeValueMemberN{Value: strconv.Itoa(presetId)},
+		},
+	}
+
+	res, err := conn.GetItem(context.TODO(), params)
+
+	if err != nil {
+		return PresetTable{}, err
+	}
+
+	var preset PresetTable
+
+	err = attributevalue.UnmarshalMap(res.Item, &preset)
+
+	if err != nil {
+		log.Warn().Msgf("Could not parse preset due to an error: %v", err)
+	}
+
+	return preset, err
 }

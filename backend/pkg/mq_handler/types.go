@@ -10,6 +10,7 @@ type PresetContainerStartEvent struct {
 	ContainerUUID string
 	UserId        string
 	PresetId      int
+	ContainerEnv  map[string]string
 }
 
 type CustomContainerStartEvent struct {

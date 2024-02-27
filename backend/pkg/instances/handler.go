@@ -4,6 +4,7 @@ import (
 	"errors"
 	"incompetent-hosting-provider/backend/pkg/constants"
 	db_instances "incompetent-hosting-provider/backend/pkg/db/tables/instances"
+	db_presets "incompetent-hosting-provider/backend/pkg/db/tables/presets"
 	"incompetent-hosting-provider/backend/pkg/mq_handler"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"net/http"
@@ -94,12 +95,33 @@ func CreatePresetContainerHandler(c *gin.Context) {
 		return
 	}
 
+	preset, err := db_presets.GetPresetById(createRequest.Preset)
+
+	if err != nil {
+		var notFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &notFoundErr) {
+			util.ThrowNotFoundException(c, "No preset with the provided id exists")
+			return
+		}
+		util.ThrowInternalServerErrorException(c, "Could not delete entry at this time")
+		return
+	}
+
+	// The env is not persisted as it may contain sensible data
+	generatedEnv := map[string]string{}
+
+	for _, v := range preset.RequiredEnv {
+		generatedEnv[v] = util.RandStringRunes(64)
+	}
+
 	containerId := uuid.NewString()
 
+	// Env with sensible data is currently in eventlog -> This should be fixed via the terraform vault
 	err = mq_handler.PublishPresetContainerStartEvent(mq_handler.PresetContainerStartEvent{
 		UserId:        userSub,
 		ContainerUUID: containerId,
 		PresetId:      createRequest.Preset,
+		ContainerEnv:  generatedEnv,
 	})
 
 	if err != nil {
@@ -110,16 +132,13 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	err = db_instances.InsertInstance(db_instances.InstancesTable{
 		UserSub:              userSub,
 		ContainerUUID:        containerId,
-		ContainerPorts:       []int{},
+		ContainerPorts:       preset.ContainerPorts,
 		ContainerDescription: createRequest.Description,
 		ContainerName:        createRequest.ContainerName,
-		Image: db_instances.ImageSpecification{
-			Name: "placeholder",
-			Tag:  "placeholder",
-		},
-		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
-		CreatedAt:      time.Now().Format(time.RFC3339),
-		StartedAt:      "N/A",
+		Image:                preset.Image,
+		InstanceStatus:       db_instances.STATUS_VALUE_SCHEDULED,
+		CreatedAt:            time.Now().Format(time.RFC3339),
+		StartedAt:            "N/A",
 	})
 
 	if err != nil {
