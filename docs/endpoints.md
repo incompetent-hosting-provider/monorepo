@@ -1,5 +1,19 @@
 # Endpoints
 
+## Status
+
+| Endpoint                       | CLI                | Backend            |
+|--------------------------------|--------------------|--------------------|
+| GET   /user/                   | :white_check_mark: | :white_check_mark: |
+| GET /user/balance              | :white_check_mark: | :white_check_mark: |
+| POST /user/balance             | :white_check_mark: | :white_check_mark: |
+| GET /instances                 |                    | :white_check_mark: |
+| GET /instances/<instanceid>    |                    | :white_check_mark: |
+| POST /instances/custom         |                    | :white_check_mark: |
+| POST /instances/preset         |                    | :white_check_mark: |
+| DELETE /instances/<instanceid> |                    | :white_check_mark: |
+| GET /service/available-presets |                    |                    |
+
 Temporary definition - subject to change.
 
 **Note**: JWT token in Authorization Header in format
