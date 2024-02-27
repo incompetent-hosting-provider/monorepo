@@ -28,10 +28,10 @@ const docTemplate = `{
                 ],
                 "summary": "Get all user instances",
                 "responses": {
-                    "202": {
-                        "description": "accepted",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/instances.InstancesInfoReponse"
                         }
                     },
                     "401": {
@@ -186,9 +186,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "accepted",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/instances.InstanceInfoDetailedResponse"
                         }
                     },
                     "401": {
@@ -484,6 +484,72 @@ const docTemplate = `{
                 },
                 "preset": {
                     "type": "integer"
+                }
+            }
+        },
+        "instances.InstanceInfo": {
+            "type": "object",
+            "properties": {
+                "container image": {
+                    "$ref": "#/definitions/instances.ContainerImageDescription"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "instances.InstanceInfoDetailedResponse": {
+            "type": "object",
+            "properties": {
+                "container image": {
+                    "$ref": "#/definitions/instances.ContainerImageDescription"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "open_ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "instances.InstancesInfoReponse": {
+            "type": "object",
+            "properties": {
+                "instances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/instances.InstanceInfo"
+                    }
                 }
             }
         },

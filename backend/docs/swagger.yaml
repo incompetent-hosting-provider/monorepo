@@ -37,6 +37,49 @@ definitions:
       preset:
         type: integer
     type: object
+  instances.InstanceInfo:
+    properties:
+      container image:
+        $ref: '#/definitions/instances.ContainerImageDescription'
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  instances.InstanceInfoDetailedResponse:
+    properties:
+      container image:
+        $ref: '#/definitions/instances.ContainerImageDescription'
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      open_ports:
+        items:
+          type: integer
+        type: array
+      started_at:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  instances.InstancesInfoReponse:
+    properties:
+      instances:
+        items:
+          $ref: '#/definitions/instances.InstanceInfo'
+        type: array
+    type: object
   payment.BalanceIncreaseBody:
     properties:
       amount:
@@ -66,10 +109,10 @@ paths:
     get:
       description: Get all instances for current user ignoring the status
       responses:
-        "202":
-          description: accepted
+        "200":
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/instances.InstancesInfoReponse'
         "401":
           description: Unauthorized
           schema:
@@ -128,9 +171,9 @@ paths:
         type: string
       responses:
         "200":
-          description: accepted
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/instances.InstanceInfoDetailedResponse'
         "401":
           description: Unauthorized
           schema:

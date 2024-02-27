@@ -261,7 +261,7 @@ func DeleteContainerHandler(c *gin.Context) {
 //
 // @Security					BearerAuth
 //
-// @Success 					202 {string} string	"accepted"
+// @Success 					200 {object} instances.InstancesInfoReponse
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						500 {object} util.ErrorResponse
@@ -293,7 +293,7 @@ func GetUserInstances(c *gin.Context) {
 //
 // @Param   containerId     path    string     true        "Container Id"
 //
-// @Success 					200 {string} string	"accepted"
+// @Success 					200 {object} instances.InstanceInfoDetailedResponse
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
