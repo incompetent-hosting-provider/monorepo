@@ -1,11 +1,15 @@
 package instances
 
 import (
+	"errors"
 	"incompetent-hosting-provider/backend/pkg/constants"
+	db_instances "incompetent-hosting-provider/backend/pkg/db/tables/instances"
 	"incompetent-hosting-provider/backend/pkg/mq_handler"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"net/http"
+	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -23,7 +27,7 @@ type ContainerImageDescription struct {
 }
 
 type CreateCustomContainerBody struct {
-	Containername string                    `json:"name"`
+	ContainerName string                    `json:"name"`
 	Description   string                    `json:"description"`
 	Image         ContainerImageDescription `json:"image"`
 	EnvVars       map[string]string         `json:"env_vars"`
@@ -32,6 +36,30 @@ type CreateCustomContainerBody struct {
 
 type CreateContainerResponse struct {
 	ContainerId string `json:"id"`
+}
+
+type InstanceInfo struct {
+	Type               string                    `json:"type"`
+	ContainerName      string                    `json:"name"`
+	ContainerId        string                    `json:"id"`
+	ContainerImageData ContainerImageDescription `json:"container image"`
+	InstanceStatus     string                    `json:"status"`
+}
+
+type InstanceInfoDetailedResponse struct {
+	Type               string                    `json:"type"`
+	ContainerName      string                    `json:"name"`
+	ContainerId        string                    `json:"id"`
+	ContainerImageData ContainerImageDescription `json:"container image"`
+	InstanceStatus     string                    `json:"status"`
+	StartedAt          string                    `json:"started_at"`
+	CreatedAt          string                    `json:"created_at"`
+	ContainerPorts     []int                     `json:"open_ports"`
+	Description        string                    `json:"description"`
+}
+
+type InstancesInfoReponse struct {
+	Instances []InstanceInfo `json:"instances"`
 }
 
 // godoc
@@ -55,7 +83,7 @@ type CreateContainerResponse struct {
 // @Router /instances/preset [post]
 func CreatePresetContainerHandler(c *gin.Context) {
 	// Use header set by middleware
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
 	var createRequest CreatePresetContainerBody
 
@@ -69,13 +97,33 @@ func CreatePresetContainerHandler(c *gin.Context) {
 	containerId := uuid.NewString()
 
 	err = mq_handler.PublishPresetContainerStartEvent(mq_handler.PresetContainerStartEvent{
-		UserId:        userId,
+		UserId:        userSub,
 		ContainerUUID: containerId,
 		PresetId:      createRequest.Preset,
 	})
 
 	if err != nil {
 		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
+		return
+	}
+
+	err = db_instances.InsertInstance(db_instances.InstancesTable{
+		UserSub:              userSub,
+		ContainerUUID:        containerId,
+		ContainerPorts:       []int{},
+		ContainerDescription: createRequest.Description,
+		ContainerName:        createRequest.ContainerName,
+		Image: db_instances.ImageSpecification{
+			Name: "placeholder",
+			Tag:  "placeholder",
+		},
+		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+		CreatedAt:      time.Now().Format(time.RFC3339),
+		StartedAt:      "N/A",
+	})
+
+	if err != nil {
+		util.ThrowInternalServerErrorException(c, "Could not save item at the current time")
 		return
 	}
 
@@ -106,7 +154,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 // @Router /instances/custom [post]
 func CreateCustomContainerHandler(c *gin.Context) {
 	// Use header set by middleware
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
 	var createRequest CreateCustomContainerBody
 
@@ -120,7 +168,7 @@ func CreateCustomContainerHandler(c *gin.Context) {
 	containerId := uuid.NewString()
 
 	err = mq_handler.PublishCustomContainerStartEvent(mq_handler.CustomContainerStartEvent{
-		UserId:            userId,
+		UserId:            userSub,
 		ContainerUUID:     containerId,
 		ContainerImage:    createRequest.Image.ImageName,
 		ContainerImageTag: createRequest.Image.Tag,
@@ -130,6 +178,27 @@ func CreateCustomContainerHandler(c *gin.Context) {
 
 	if err != nil {
 		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
+		return
+	}
+
+	err = db_instances.InsertInstance(db_instances.InstancesTable{
+		UserSub:              userSub,
+		ContainerUUID:        containerId,
+		ContainerPorts:       createRequest.Ports,
+		ContainerDescription: createRequest.Description,
+		ContainerName:        createRequest.ContainerName,
+		Image: db_instances.ImageSpecification{
+			Name: createRequest.Image.ImageName,
+			Tag:  createRequest.Image.Tag,
+		},
+		InstanceStatus: db_instances.STATUS_VALUE_SCHEDULED,
+		Type:           db_instances.TYPE_CUSTOM,
+		CreatedAt:      time.Now().Format(time.RFC3339),
+		StartedAt:      "N/A",
+	})
+
+	if err != nil {
+		util.ThrowInternalServerErrorException(c, "Could not save item at the current time")
 		return
 	}
 
@@ -156,24 +225,100 @@ func CreateCustomContainerHandler(c *gin.Context) {
 // @Failure						503 {object} util.ErrorResponse
 // @Failure						500 {object} util.ErrorResponse
 //
-// @Router /instances/:containerId [delete]
+// @Router /instances/{containerId} [delete]
 func DeleteContainerHandler(c *gin.Context) {
-	containerId := c.Param("containerId")
-	userId := c.Request.Header.Get(constants.USER_ID_HEADER)
+	containerUUID := c.Param("containerId")
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
 
-	if containerId == "" {
+	if containerUUID == "" {
 		util.ThrowBadRequestException(c, "No valid containerId passed")
 	}
 
 	err := mq_handler.PublishDeleteContainerEvent(mq_handler.DeleteContainerEvent{
-		ContainerUUID: containerId,
-		UserId:        userId,
+		ContainerUUID: containerUUID,
+		UserId:        userSub,
 	})
 
 	if err != nil {
-		util.ThrowServiceUnavailableException(c, "Could not schedule container at the current time")
+		util.ThrowServiceUnavailableException(c, "Could  schedule container deletion at the current time")
 		return
 	}
 
+	err = db_instances.DeleteInstanceById(userSub, containerUUID)
+	if err != nil {
+		util.ThrowInternalServerErrorException(c, "Could not delete entry at this time")
+	}
+
 	c.Status(http.StatusAccepted)
+}
+
+// godoc
+// @Summary 				  	Get all user instances
+//
+// @Schemes
+// @Description 				Get all instances for current user ignoring the status
+// @Tags 						instances
+//
+// @Security					BearerAuth
+//
+// @Success 					200 {object} instances.InstancesInfoReponse
+//
+// @Failure						401 {object} util.ErrorResponse
+// @Failure						500 {object} util.ErrorResponse
+//
+// @Router /instances [get]
+func GetUserInstances(c *gin.Context) {
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
+
+	instances, err := db_instances.GetAllUserInstances(userSub)
+
+	if err != nil {
+		util.ThrowInternalServerErrorException(c, "Could not fetch data")
+		return
+	}
+
+	c.JSON(http.StatusOK, InstancesInfoReponse{
+		Instances: serializeInstanceResponses(instances),
+	})
+}
+
+// godoc
+// @Summary 				  	Get instance details
+//
+// @Schemes
+// @Description 				Get details of a single instance by id
+// @Tags 						instances
+//
+// @Security					BearerAuth
+//
+// @Param   containerId     path    string     true        "Container Id"
+//
+// @Success 					200 {object} instances.InstanceInfoDetailedResponse
+//
+// @Failure						401 {object} util.ErrorResponse
+// @Failure						404 {object} util.ErrorResponse
+// @Failure						500 {object} util.ErrorResponse
+//
+// @Router /instances/{containerId} [get]
+func GetInstance(c *gin.Context) {
+	containerUUID := c.Param("containerId")
+	userSub := c.Request.Header.Get(constants.USER_ID_HEADER)
+
+	if containerUUID == "" {
+		util.ThrowBadRequestException(c, "No valid containerId passed")
+	}
+
+	instance, err := db_instances.GetInstanceById(userSub, containerUUID)
+
+	if err != nil {
+		var notFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &notFoundErr) {
+			util.ThrowNotFoundException(c, "Could not find item with given id")
+			return
+		}
+		util.ThrowInternalServerErrorException(c, "Could not delete entry at this time")
+		return
+	}
+
+	c.JSON(http.StatusOK, serializeDetailedInstanceResponse(instance))
 }
