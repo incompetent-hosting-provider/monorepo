@@ -4,6 +4,7 @@ import (
 	"incompetent-hosting-provider/backend/pkg/auth"
 	"incompetent-hosting-provider/backend/pkg/instances"
 	"incompetent-hosting-provider/backend/pkg/payment"
+	"incompetent-hosting-provider/backend/pkg/service"
 	"incompetent-hosting-provider/backend/pkg/user"
 	"incompetent-hosting-provider/backend/pkg/util"
 	"incompetent-hosting-provider/backend/pkg/webhook"
@@ -58,6 +59,7 @@ func configureGetEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddle
 	ginEngine.GET("/user", authMiddleware.AuthFunc, user.UserFetchHandler)
 	ginEngine.GET("/instances", authMiddleware.AuthFunc, instances.GetUserInstances)
 	ginEngine.GET("/instances/:containerId", authMiddleware.AuthFunc, instances.GetInstance)
+	ginEngine.GET("/service/available-presets", authMiddleware.AuthFunc, service.GetAvailablePresetsHandler)
 }
 
 func configurePostEndpoints(ginEngine *gin.Engine, authMiddleware auth.AuthMiddleware) {

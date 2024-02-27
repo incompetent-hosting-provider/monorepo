@@ -90,6 +90,22 @@ definitions:
       balance:
         type: integer
     type: object
+  service.PresetListResponse:
+    properties:
+      presets:
+        items:
+          $ref: '#/definitions/service.preset'
+        type: array
+    type: object
+  service.preset:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   user.UserResponse:
     properties:
       balance:
@@ -325,8 +341,29 @@ paths:
       summary: Increase user balance
       tags:
       - payment
-  /spi-webhook:
+  /service/available-presets:
     get:
+      description: Get full list of available presets
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.PresetListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get list of presets
+      tags:
+      - service
+  /spi-webhook:
+    post:
       description: Handle keycloak SPI webhook events
       responses:
         "200":

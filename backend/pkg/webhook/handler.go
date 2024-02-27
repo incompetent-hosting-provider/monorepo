@@ -26,7 +26,7 @@ type KeycloakWebookPayload struct {
 //
 // @Failure						500 {object} util.ErrorResponse
 //
-// @Router /spi-webhook [get]
+// @Router /spi-webhook [post]
 func WebhookHandler(c *gin.Context) {
 	var receivedEvent KeycloakWebookPayload
 

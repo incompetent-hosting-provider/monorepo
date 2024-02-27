@@ -63,8 +63,6 @@ func (a *AuthMiddleware) AuthFunc(c *gin.Context) {
 		return
 	}
 
-	log.Warn().Msgf("%v", a.JWKS)
-
 	parsed_token, err := jwt.Parse(token, a.JWKS.Keyfunc)
 
 	if err != nil {
