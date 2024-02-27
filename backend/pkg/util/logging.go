@@ -48,8 +48,11 @@ func InitLogger() {
 
 	log.Debug().Msg("Starting with loglevel debug enabled")
 
+	// Send logs every 10 seconds or if 500 log events have been collected
 	lokiClient = LokiClient{
 		PushIntveralSeconds: 10,
+		MaxBatchSize:        500,
+		LokiEndpoint:        GetStringEnvWithDefault("LOKI_HOST", "http://localhost:3100"),
 	}
 
 	go lokiClient.bgRun()
