@@ -95,5 +95,9 @@ services:
       - '3000:3000'
     volumes:
       - grafana-storage:/var/lib/grafana
-      - ./grafana/dashboard:/etc/grafana/dashboard
-      - ./grafana/datasource:/etc/grafana/datasource
+      - ./grafana/provisioning/dashboard:/etc/grafana/provisioning/dashboard
+      - ./grafana/provisioning/datasource:/etc/grafana/provisioning/datasource
+    environment:
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "./grafana/provisioning/dashboard/backend_dashboard.json"
+
+      #credentials: admin, pw: ihp_admin
