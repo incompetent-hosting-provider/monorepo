@@ -1,0 +1,21 @@
+name: release
+
+on:
+  #release:
+    #types: [ published ]
+  push:
+    branches:
+      - 16-setup-ci-for-backend
+
+jobs:
+  publish_backend:
+    runs-on: "ubuntu-20.04"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and publish backend
+        uses: macbre/push-to-ghcr@master
+        with:
+          dockerfile: ./backend/Dockerfile
+          image_name: incompetent-hosting-provider/backend
+          github_token: ${{ secrets.GH_API_TOKEN_GHPR }}
