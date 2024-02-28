@@ -32,18 +32,20 @@ func (l *LokiClient) bgRun() {
 	lastRunTimestamp := 0
 	isWorking := true
 	for {
-		if time.Now().Second()-lastRunTimestamp < l.PushIntveralSeconds || len(l.Values) > l.MaxBatchSize {
-			prevLogs := l.Values
-			l.Values = [][]string{}
-			err := pushToLoki(prevLogs, l.LokiEndpoint)
-			if err != nil && isWorking {
-				isWorking = false
-				log.Error().Msgf("Logs are currently not being forwarded to loki due to an error: %v", err)
-			}
-			if err == nil && !isWorking {
-				isWorking = true
-				// I will not accept PR comments about this log message tyvm
-				log.Info().Msgf("Logs are now being published again. The loki instance seems to be reachable once more! May the logeth collecteth'r beest did bless with our logs")
+		if time.Now().Second()-lastRunTimestamp > l.PushIntveralSeconds || len(l.Values) > l.MaxBatchSize {
+			if len(l.Values) > 0 {
+				prevLogs := l.Values
+				l.Values = [][]string{}
+				err := pushToLoki(prevLogs, l.LokiEndpoint)
+				if err != nil && isWorking {
+					isWorking = false
+					log.Error().Msgf("Logs are currently not being forwarded to loki due to an error: %v", err)
+				}
+				if err == nil && !isWorking {
+					isWorking = true
+					// I will not accept PR comments about this log message tyvm
+					log.Info().Msgf("Logs are now being published again. The loki instance seems to be reachable once more! May the logeth collecteth'r beest did bless with our logs")
+				}
 			}
 			lastRunTimestamp = time.Now().Second()
 		}
@@ -57,10 +59,7 @@ b) would mean that every run of this creates further logs that cannot be publish
 => The error will be returned and the problem will be logged ONCE by the handling function
 */
 func pushToLoki(logs [][]string, lokiEndpoint string) error {
-	// There is no need to send anything in this case
-	if len(logs) == 0 {
-		return nil
-	}
+
 	lokiPushPath := "/loki/api/v1/push"
 
 	data, err := json.Marshal(lokiLogEvent{

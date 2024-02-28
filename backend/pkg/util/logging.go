@@ -65,10 +65,5 @@ type LokiHook struct {
 }
 
 func (h LokiHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
-	if level != zerolog.NoLevel {
-		e.Str("severity", level.String())
-	}
-	// TODO: loki push
-	//pushToLoki(strconv.FormatInt(time.Now().UnixNano(), 10), msg, level.String())
 	lokiClient.Values = append(lokiClient.Values, []string{strconv.FormatInt(time.Now().UnixNano(), 10), msg})
 }
