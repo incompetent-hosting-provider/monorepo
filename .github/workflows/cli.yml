@@ -3,8 +3,7 @@ name: cli
 on:
   push:
     branches:
-      #- main
-      - 16-setup-ci-for-backend
+      - main
     paths:
       - cli/**/*.go
       - cli/go.mod
@@ -12,8 +11,7 @@ on:
 
   pull_request:
     branches: 
-      #- main
-      - 16-setup-ci-for-backend
+      - main
     paths:
       - cli/**/*.go
       - cli/go.mod

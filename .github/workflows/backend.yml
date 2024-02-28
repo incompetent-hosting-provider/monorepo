@@ -3,8 +3,7 @@ name: Backend
 on:
   push:
     branches:
-      #- main
-      - 16-setup-ci-for-backend
+      - main
     paths:
       - backend/**/*.go
       - backend/go.mod
@@ -12,8 +11,7 @@ on:
 
   pull_request:
     branches: 
-      #- main
-      - 16-setup-ci-for-backend
+      - main
     paths:
       - backend/**/*.go
       - .github/workflows/**
