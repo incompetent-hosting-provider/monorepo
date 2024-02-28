@@ -2,13 +2,13 @@ package incompetenthostingprovider
 
 type DockerMySQL struct {
 	index               int
-	uid                 int
+	uid                 string
 	external_port       int
 	mysql_root_password string
 }
 
 // Getter
-func (d DockerMySQL) GetUid() int {
+func (d DockerMySQL) GetUid() string {
 	return d.uid
 }
 
@@ -17,7 +17,7 @@ func (d DockerMySQL) GetMySqlRootPassword() string {
 }
 
 // Setter
-func (d *DockerMySQL) SetUid(uid int) {
+func (d *DockerMySQL) SetUid(uid string) {
 	d.uid = uid
 }
 

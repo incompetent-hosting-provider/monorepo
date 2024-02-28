@@ -20,7 +20,7 @@ type CustomContainerStartEvent struct {
 	ContainerPorts    []int
 }
 
-type StopContainerEvent struct {
+type DeystroyContainerEvent struct {
 	ContainerUUID string
 	UserId        string
 }
@@ -31,7 +31,7 @@ type UpdateInstanceEvent struct {
 	NewStatus     string
 }
 
-func parseReceivedEvent[T CustomContainerStartEvent | PresetContainerStartEvent | StopContainerEvent](input []byte) (T, error) {
+func parseReceivedEvent[T CustomContainerStartEvent | PresetContainerStartEvent | DeystroyContainerEvent](input []byte) (T, error) {
 	var output T
 	err := json.Unmarshal(input, &output)
 	return output, err

@@ -9,7 +9,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func (m *MqHandler) publishUpdateInstanceStatusEvent(event UpdateInstanceEvent) {
+func (m *MqHandler) PublishUpdateInstanceStatusEvent(event UpdateInstanceEvent) {
 	eventMarshalled, err := json.Marshal(event)
 
 	if err != nil {
