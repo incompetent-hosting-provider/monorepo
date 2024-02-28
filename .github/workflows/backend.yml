@@ -3,7 +3,8 @@ name: Backend
 on:
   push:
     branches:
-      - main
+      #- main
+      - 16-setup-ci-for-backend
     paths:
       - backend/**/*.go
       - backend/go.mod
@@ -11,7 +12,8 @@ on:
 
   pull_request:
     branches: 
-      - main
+      #- main
+      - 16-setup-ci-for-backend
     paths:
       - backend/**/*.go
       - .github/workflows/**
@@ -39,6 +41,29 @@ jobs:
 
       - name: run tests
         run: go test ./...
+
+  coverage:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.5'
+
+      - uses: gwatts/go-coverage-action@v1
+        id: coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: incompetent-hosting-provider/monorepo
 
   golangci:
     name: lint
