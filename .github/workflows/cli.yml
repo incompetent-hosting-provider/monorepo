@@ -3,7 +3,8 @@ name: cli
 on:
   push:
     branches:
-      - main
+      #- main
+      - 16-setup-ci-for-backend
     paths:
       - cli/**/*.go
       - cli/go.mod
@@ -11,7 +12,8 @@ on:
 
   pull_request:
     branches: 
-      - main
+      #- main
+      - 16-setup-ci-for-backend
     paths:
       - cli/**/*.go
       - cli/go.mod
@@ -38,7 +40,13 @@ jobs:
           go-version: '1.21.4' 
 
       - name: run tests
-        run: go test ./...
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+  
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: incompetent-hosting-provider/monorepo
 
   golangci:
     name: lint

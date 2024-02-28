@@ -94,7 +94,6 @@ jobs:
   build:
     needs:
       - test
-      - golangci
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
