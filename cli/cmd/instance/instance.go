@@ -33,15 +33,22 @@ var InstanceCmd = &cobra.Command{
 		}
 
 		instance, err := backend.DefaultBackendClient.GetUserInstance(tokens.AccessToken, id, true)
-		if errors.Is(err, backend.ErrNotAuthenticated) {
-			messages.DisplaySessionExpiredMessage()
-			return
-		} else if err != nil {
-			fmt.Println("Unable to get your instance:", err)
-			fmt.Println("Please try again later.")
+		if err != nil {
+			handleGetError(err)
 			return
 		}
 
 		fmt.Println(instance.String())
 	},
+}
+
+func handleGetError(err error) {
+	if errors.Is(err, backend.ErrNotAuthenticated) {
+		messages.DisplaySessionExpiredMessage()
+		return
+	} else if err != nil {
+		fmt.Println("Unable to get your instance:", err)
+		fmt.Println("Please try again later.")
+		return
+	}
 }

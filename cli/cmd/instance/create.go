@@ -30,7 +30,7 @@ var createCmd = &cobra.Command{
 
 		isCustomInstance, err := promptIsCustomInstance()
 		if err != nil {
-			displayErrorMessage(err)
+			handleCreateError(err)
 			return
 		}
 
@@ -39,79 +39,96 @@ var createCmd = &cobra.Command{
 		if isCustomInstance {
 			image, err = promptImageCustom()
 			if err != nil {
-				displayErrorMessage(err)
+				handleCreateError(err)
 				return
 			}
 		} else {
-			preset, err = promptImageFromTemplates()
+			preset, err = promptImageFromTemplates(tokens.AccessToken)
 			if err != nil {
-				displayErrorMessage(err)
+				handleCreateError(err)
 				return
 			}
 		}
 
 		name, err := promptInstanceName()
 		if err != nil {
-			displayErrorMessage(err)
+			handleCreateError(err)
 			return
 		}
 
 		description, err := promptInstanceDescription()
 		if err != nil {
-			displayErrorMessage(err)
+			handleCreateError(err)
 			return
 		}
 
-		var createdId string
-		var createError error
 		if isCustomInstance {
-			openPorts, err := promptInstanceOpenPorts()
+			resp, err := createCustomInstance(tokens.AccessToken, name, description, image)
 			if err != nil {
-				displayErrorMessage(err)
-				return
-			}
-	
-			envVariables, err := promptEnvVariables()
-			if err != nil {
-				displayErrorMessage(err)
+				handleCreateError(err)
 				return
 			}
 
-			request := backend.CreateCustomInstanceRequest{
-				Name: name,
-				Description: description,
-				Image: image,
-				Ports: openPorts,
-				EnvVars: envVariables,
-			}
-
-			createdId, createError = backend.DefaultBackendClient.CreateCustomInstance(tokens.AccessToken, request, true)
+			fmt.Printf("Instance created with ID: %s\n", resp.InstanceID)
+			fmt.Println("The instance will be available shortly.")
 		} else {
-			request := backend.CreatePresetInstanceRequest{
-				PresetID: preset.ID,
-				Name: name,
-				Description: description,
+			resp, err := createTemplateInstance(tokens.AccessToken, name, description, preset.ID)
+			if err != nil {
+				handleCreateError(err)
+				return
 			}
 
-			createdId, createError = backend.DefaultBackendClient.CreatePresetInstance(tokens.AccessToken, request, true)
+			fmt.Printf("Instance created with ID: %s\n", resp.InstanceID)
+			if resp.EnvVars != nil && len(resp.EnvVars) > 0 {
+				fmt.Println("The following environment variables were set:")
+				for key, value := range resp.EnvVars {
+					fmt.Printf("%s: %s\n", key, value)
+				}
+			}
+			fmt.Println("The instance will be available shortly.")
 		}
-
-		if errors.Is(createError, backend.ErrNotAuthenticated) {
-			messages.DisplaySessionExpiredMessage()
-			return
-		} else if createError != nil {
-			displayErrorMessage(createError)
-			return
-		}
-
-		fmt.Printf("Instance %s created successfully!\n", name)
-		fmt.Printf("Created instance id: %s\n", createdId)
 	},
 }
 
-func displayErrorMessage(err error) {
-	fmt.Printf("Creation of instance failed: %s\n", err.Error())
-	fmt.Println("Please try again later.")
+func createCustomInstance(token authentication.AccessToken, name string, description string, image models.ContainerImage) (backend.CreateCustomInstanceResponse, error) {
+	openPorts, err := promptInstanceOpenPorts()
+	if err != nil {
+		return backend.CreateCustomInstanceResponse{}, err
+	}
+
+	envVariables, err := promptEnvVariables()
+	if err != nil {
+		return backend.CreateCustomInstanceResponse{}, err
+	}
+
+	request := backend.CreateCustomInstanceRequest{
+		Name: name,
+		Description: description,
+		Image: image,
+		Ports: openPorts,
+		EnvVars: envVariables,
+	}
+
+	return backend.DefaultBackendClient.CreateCustomInstance(token, request, true)
+}
+
+func createTemplateInstance(token authentication.AccessToken, name string, description string, preset int) (backend.CreatePresetInstanceResponse, error){
+	request := backend.CreatePresetInstanceRequest{
+		PresetID: preset,
+		Name: name,
+		Description: description,
+	}
+
+	return backend.DefaultBackendClient.CreatePresetInstance(token, request, true)
+}
+
+func handleCreateError(err error) {
+	if errors.Is(err, backend.ErrNotAuthenticated) {
+		messages.DisplaySessionExpiredMessage()
+	} else {
+		fmt.Printf("Creation of instance failed: %s\n", err.Error())
+		fmt.Println("Please try again later.")
+	}
 }
 
 func promptIsCustomInstance() (bool, error) {
@@ -128,8 +145,8 @@ func promptIsCustomInstance() (bool, error) {
 	return result == 1, nil
 }
 
-func promptImageFromTemplates() (models.InstancePreset, error){
-	templates, err := backend.DefaultBackendClient.GetInstancePresets()
+func promptImageFromTemplates(token authentication.AccessToken) (models.InstancePreset, error){
+	templates, err := backend.DefaultBackendClient.GetInstancePresets(token, true)
 	if err != nil {
 		return models.InstancePreset{}, err
 	}

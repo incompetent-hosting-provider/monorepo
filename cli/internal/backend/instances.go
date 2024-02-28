@@ -105,64 +105,65 @@ func (client BackendClient) GetUserInstance(token authentication.AccessToken, in
 
 
 type CreatePresetInstanceRequest struct {
-	PresetID string `json:"preset,omitempty"`
+	PresetID int `json:"preset,omitempty"`
 	Name string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 }
 
-type CreateInstanceResponse struct {
-	InstanceID string `json:"instance_id,omitempty"`
+type CreatePresetInstanceResponse struct {
+	InstanceID string `json:"id,omitempty"`
+	EnvVars map[string]string `json:"env_vars,omitempty"`
 }
 
 // Creates a custom instance for the user associated to the tokens provided.
 // Returns the id of the created instance.
-func (client BackendClient) CreatePresetInstance(token authentication.AccessToken, request CreatePresetInstanceRequest, authRetry bool) (string, error) {
+func (client BackendClient) CreatePresetInstance(token authentication.AccessToken, request CreatePresetInstanceRequest, authRetry bool) (CreatePresetInstanceResponse, error) {
 	reqBody, err := json.Marshal(request)
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal create preset instance request with id %s: %w", request.PresetID, err)
+		return CreatePresetInstanceResponse{}, fmt.Errorf("failed to marshal create preset instance request with id %d: %w", request.PresetID, err)
 	}
 
 	req, err := client.buildAuthenticatedRequest("POST", "/instances/preset/", token, bytes.NewBuffer(reqBody))
 	if err != nil {
-		return "", fmt.Errorf("failed to create create preset instance request with id %s: %w", request.PresetID, err)
+		return CreatePresetInstanceResponse{}, fmt.Errorf("failed to create create preset instance request with id %d: %w", request.PresetID, err)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to create preset instance with id %s: %w", request.PresetID, err)
+		return CreatePresetInstanceResponse{},fmt.Errorf("failed to create preset instance with id %d: %w", request.PresetID, err)
 	}
 
 	switch resp.StatusCode {
-	case 200:
+	case 202:
 		break
 	case 401:
 		if authRetry {
 			newTokens, err := authentication.RefreshTokens()
 			if err != nil || newTokens == nil {
-				return "", fmt.Errorf("failed to create preset instance with id %s: %w: %w", request.PresetID, ErrNotAuthenticated, err)
+				return CreatePresetInstanceResponse{},fmt.Errorf("failed to create preset instance with id %d: %w: %w", request.PresetID, ErrNotAuthenticated, err)
 			}
 	
 			return client.CreatePresetInstance(newTokens.AccessToken, request, false)
 		} else {
-			return "", fmt.Errorf("failed to create preset instance with id %s: %w", request.PresetID, ErrNotAuthenticated)
+			return CreatePresetInstanceResponse{},fmt.Errorf("failed to create preset instance with id %d: %w", request.PresetID, ErrNotAuthenticated)
 		}
 	default:
-		return "", fmt.Errorf("failed to create preset instance with id %s: %s", request.PresetID, resp.Status)
+		return CreatePresetInstanceResponse{},fmt.Errorf("failed to create preset instance with id %d: %s", request.PresetID, resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body of create preset instance request with id %s: %w", request.PresetID, err)
+		return CreatePresetInstanceResponse{},fmt.Errorf("failed to read response body of create preset instance request with id %d: %w", request.PresetID, err)
 	}
 
-	var createInstanceResponse *CreateInstanceResponse
+	var createInstanceResponse *CreatePresetInstanceResponse
 	err = json.Unmarshal(body, &createInstanceResponse)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse response body of create preset instance request with id %s: %w", request.PresetID, err)
+		return CreatePresetInstanceResponse{},fmt.Errorf("failed to parse response body of create preset instance request with id %d: %w", request.PresetID, err)
 	}
 
-	return createInstanceResponse.InstanceID, nil
+	return *createInstanceResponse, nil
 }
 
 type CreateCustomInstanceRequest struct {
@@ -173,56 +174,60 @@ type CreateCustomInstanceRequest struct {
 	Ports []int `json:"ports,omitempty"`
 }
 
+type CreateCustomInstanceResponse struct {
+	InstanceID string `json:"id,omitempty"`
+}
+
 
 // Creates a custom instance for the user associated to the tokens provided.
 // Returns the id of the created instance.
-func (client BackendClient) CreateCustomInstance(token authentication.AccessToken, r CreateCustomInstanceRequest, authRetry bool) (string, error) {
+func (client BackendClient) CreateCustomInstance(token authentication.AccessToken, r CreateCustomInstanceRequest, authRetry bool) (CreateCustomInstanceResponse, error) {
 	reqBody, err := json.Marshal(r)
 	if err != nil {
-		return "",fmt.Errorf("failed to marshal create custom instance request: %w", err)
+		return CreateCustomInstanceResponse{}, fmt.Errorf("failed to marshal create custom instance request: %w", err)
 	}
 
 	req, err := client.buildAuthenticatedRequest("POST", "/instances/custom", token, bytes.NewBuffer(reqBody))
 	if err != nil {
-		return "",fmt.Errorf("failed to create create custom instance request: %w", err)
+		return CreateCustomInstanceResponse{}, fmt.Errorf("failed to create create custom instance request: %w", err)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "",fmt.Errorf("failed to create custom instance: %w", err)
+		return CreateCustomInstanceResponse{}, fmt.Errorf("failed to create custom instance: %w", err)
 	}
 
 	switch resp.StatusCode {
-	case 200:
+	case 202:
 		break
 	case 401:
 		if authRetry {
 			newTokens, err := authentication.RefreshTokens()
 			if err != nil || newTokens == nil {
-				return "", fmt.Errorf("failed to create custom instance: %w: %w", ErrNotAuthenticated, err)
+				return CreateCustomInstanceResponse{},  fmt.Errorf("failed to create custom instance: %w: %w", ErrNotAuthenticated, err)
 			}
 	
 			return client.CreateCustomInstance(newTokens.AccessToken, r, false)
 		} else {
-			return "",fmt.Errorf("failed to create custom instance: %w", ErrNotAuthenticated)
+			return CreateCustomInstanceResponse{}, fmt.Errorf("failed to create custom instance: %w", ErrNotAuthenticated)
 		}
 	default:
-		return "",fmt.Errorf("failed to create custom instance: %s", resp.Status)
+		return CreateCustomInstanceResponse{}, fmt.Errorf("failed to create custom instance: %s", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		return "",fmt.Errorf("failed to read response body of create custom instance request: %w", err)
+		return CreateCustomInstanceResponse{}, fmt.Errorf("failed to read response body of create custom instance request: %w", err)
 	}
 
-	var createInstanceResponse *CreateInstanceResponse
+	var createInstanceResponse *CreateCustomInstanceResponse
 	err = json.Unmarshal(body, &createInstanceResponse)
 	if err != nil {
-		return "",fmt.Errorf("failed to parse response body of create custom instance request: %w", err)
+		return CreateCustomInstanceResponse{}, fmt.Errorf("failed to parse response body of create custom instance request: %w", err)
 	}
 
-	return createInstanceResponse.InstanceID, nil
+	return *createInstanceResponse, nil
 }
 
 
@@ -239,7 +244,7 @@ func (client BackendClient) DeleteInstance(token authentication.AccessToken, ins
 	}
 
 	switch resp.StatusCode {
-	case 200:
+	case 202:
 		break
 	case 401:
 		if authRetry {
