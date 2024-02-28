@@ -34,6 +34,11 @@ var InstancesCmd = &cobra.Command{
 			return
 		}
 
+		if len(instances) < 1 {
+			fmt.Println("You currently have no instances.")
+			return
+		}
+
 		for _, instance := range instances {
 			fmt.Println(instance.String())
 		}
