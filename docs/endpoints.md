@@ -12,7 +12,7 @@
 | POST /instances/custom         |                    | :white_check_mark: |
 | POST /instances/preset         |                    | :white_check_mark: |
 | DELETE /instances/<instanceid> |                    | :white_check_mark: |
-| GET /service/available-presets |                    |                    |
+| GET /service/available-presets |                    | :white_check_mark: |
 
 Temporary definition - subject to change.
 
@@ -102,10 +102,6 @@ Response:
 
 GET `/instances`
 
-query parameter:
-
-- status = "RUNNING" | "PENDING" | "TERMINATED" (optional)
-
 Response:
 
 ```json
@@ -134,7 +130,7 @@ Body:
 
 ```json
 {
-  "preset": "<preset Id>",
+  "preset": 1,
   "name": "my user defined name",
   "description?": "description"
 }
@@ -145,7 +141,10 @@ Response
 
 ```json
 {
-  "id": "dasdhjsk"
+  "id": "dasdhjsk",
+  "env_vars": {
+    "..": ".."
+  }
 }
 ```
 
@@ -197,7 +196,7 @@ Response:
   "presets": [
     {
       "name": "hello",
-      "id": "myid",
+      "id": 1,
       "description": "Hello I am a mysql instance"
     }
   ]

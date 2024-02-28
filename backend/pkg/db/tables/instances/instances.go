@@ -133,7 +133,7 @@ func GetAllUserInstances(userSub string) ([]InstancesTable, error) {
 		},
 	}
 
-	var result []InstancesTable
+	result := []InstancesTable{}
 
 	for {
 

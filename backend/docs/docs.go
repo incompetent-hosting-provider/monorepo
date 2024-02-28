@@ -76,7 +76,7 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/instances.CreateContainerResponse"
+                            "$ref": "#/definitions/instances.CustomContainerCreatedResponse"
                         }
                     },
                     "401": {
@@ -133,7 +133,7 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/instances.CreateContainerResponse"
+                            "$ref": "#/definitions/instances.PresetContainerCreatedResponse"
                         }
                     },
                     "401": {
@@ -360,8 +360,42 @@ const docTemplate = `{
                 }
             }
         },
-        "/spi-webhook": {
+        "/service/available-presets": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get full list of available presets",
+                "tags": [
+                    "service"
+                ],
+                "summary": "Get list of presets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.PresetListResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/spi-webhook": {
+            "post": {
                 "description": "Handle keycloak SPI webhook events",
                 "tags": [
                     "webhook"
@@ -369,9 +403,9 @@ const docTemplate = `{
                 "summary": "SPI webhook handler",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/payment.BalanceResponse"
+                            "type": "string"
                         }
                     },
                     "500": {
@@ -439,14 +473,6 @@ const docTemplate = `{
                 }
             }
         },
-        "instances.CreateContainerResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
         "instances.CreateCustomContainerBody": {
             "type": "object",
             "properties": {
@@ -484,6 +510,14 @@ const docTemplate = `{
                 },
                 "preset": {
                     "type": "integer"
+                }
+            }
+        },
+        "instances.CustomContainerCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 }
             }
         },
@@ -553,6 +587,20 @@ const docTemplate = `{
                 }
             }
         },
+        "instances.PresetContainerCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "env_vars": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "payment.BalanceIncreaseBody": {
             "type": "object",
             "properties": {
@@ -566,6 +614,31 @@ const docTemplate = `{
             "properties": {
                 "balance": {
                     "type": "integer"
+                }
+            }
+        },
+        "service.PresetListResponse": {
+            "type": "object",
+            "properties": {
+                "presets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.preset"
+                    }
+                }
+            }
+        },
+        "service.preset": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

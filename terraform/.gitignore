@@ -29,3 +29,6 @@ bins
 
 # Go workspace file
 go.work
+
+# build binary
+goterra

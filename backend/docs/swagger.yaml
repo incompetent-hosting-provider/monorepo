@@ -6,11 +6,6 @@ definitions:
       version:
         type: string
     type: object
-  instances.CreateContainerResponse:
-    properties:
-      id:
-        type: string
-    type: object
   instances.CreateCustomContainerBody:
     properties:
       description:
@@ -36,6 +31,11 @@ definitions:
         type: string
       preset:
         type: integer
+    type: object
+  instances.CustomContainerCreatedResponse:
+    properties:
+      id:
+        type: string
     type: object
   instances.InstanceInfo:
     properties:
@@ -80,6 +80,15 @@ definitions:
           $ref: '#/definitions/instances.InstanceInfo'
         type: array
     type: object
+  instances.PresetContainerCreatedResponse:
+    properties:
+      env_vars:
+        additionalProperties:
+          type: string
+        type: object
+      id:
+        type: string
+    type: object
   payment.BalanceIncreaseBody:
     properties:
       amount:
@@ -89,6 +98,22 @@ definitions:
     properties:
       balance:
         type: integer
+    type: object
+  service.PresetListResponse:
+    properties:
+      presets:
+        items:
+          $ref: '#/definitions/service.preset'
+        type: array
+    type: object
+  service.preset:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
     type: object
   user.UserResponse:
     properties:
@@ -206,7 +231,7 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/instances.CreateContainerResponse'
+            $ref: '#/definitions/instances.CustomContainerCreatedResponse'
         "401":
           description: Unauthorized
           schema:
@@ -243,7 +268,7 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/instances.CreateContainerResponse'
+            $ref: '#/definitions/instances.PresetContainerCreatedResponse'
         "401":
           description: Unauthorized
           schema:
@@ -325,14 +350,35 @@ paths:
       summary: Increase user balance
       tags:
       - payment
-  /spi-webhook:
+  /service/available-presets:
     get:
-      description: Handle keycloak SPI webhook events
+      description: Get full list of available presets
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/payment.BalanceResponse'
+            $ref: '#/definitions/service.PresetListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get list of presets
+      tags:
+      - service
+  /spi-webhook:
+    post:
+      description: Handle keycloak SPI webhook events
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
         "500":
           description: Internal Server Error
           schema:

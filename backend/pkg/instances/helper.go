@@ -3,7 +3,7 @@ package instances
 import db_instances "incompetent-hosting-provider/backend/pkg/db/tables/instances"
 
 func serializeInstanceResponses(instances []db_instances.InstancesTable) []InstanceInfo {
-	var serializedInstances []InstanceInfo
+	serializedInstances := []InstanceInfo{}
 
 	for _, instance := range instances {
 		serializedInstances = append(serializedInstances, InstanceInfo{

@@ -22,11 +22,11 @@ type KeycloakWebookPayload struct {
 // @Description 				Handle keycloak SPI webhook events
 // @Tags 						webhook
 //
-// @Success 					200 {object} payment.BalanceResponse
+// @Success 					200 {string} string	"ok"
 //
 // @Failure						500 {object} util.ErrorResponse
 //
-// @Router /spi-webhook [get]
+// @Router /spi-webhook [post]
 func WebhookHandler(c *gin.Context) {
 	var receivedEvent KeycloakWebookPayload
 
