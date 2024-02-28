@@ -3,8 +3,7 @@ name: Terraform
 on:
   push:
     branches:
-      #- main
-      - 16-setup-ci-for-backend
+      - main
     paths:
       - terraform/**/*.go
       - terraform/go.mod
@@ -12,8 +11,7 @@ on:
 
   pull_request:
     branches: 
-      #- main
-      - 16-setup-ci-for-backend
+      - main
     paths:
       - terraform/**/*.go
       - .github/workflows/**
