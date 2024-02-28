@@ -30,12 +30,13 @@ func TestGetUserInfo_RequestParams(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Replace the base URL with the test server URL
-	http.DefaultClient = server.Client()
-	baseURL = server.URL
+	testClient := BackendClient{
+		baseURL: server.URL,
+		client: server.Client(),
+	}
 
 	// ACT
-	_, _ = GetUserInfo(tokens)
+	_, _ =  testClient.GetUserInfo(tokens)
 }
 
 func TestGetUserInfo_Success(t *testing.T) {
@@ -64,12 +65,13 @@ func TestGetUserInfo_Success(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Replace the base URL with the test server URL
-	http.DefaultClient = server.Client()
-	baseURL = server.URL
+	testClient := BackendClient{
+		baseURL: server.URL,
+		client: server.Client(),
+	}
 
 	// ACT
-	userInfo, err := GetUserInfo(tokens)
+	userInfo, err :=  testClient.GetUserInfo(tokens)
 
 	// ASSERT
 	assert.NoError(t, err)
@@ -90,13 +92,14 @@ func TestGetUserInfo_InternalServerError(t *testing.T) {
 			w.WriteHeader(mockErrorResponseCode)
 		}))
 		defer server.Close()
-	
-		// Replace the base URL with the test server URL
-		http.DefaultClient = server.Client()
-		baseURL = server.URL
-	
+
+		testClient := BackendClient{
+			baseURL: server.URL,
+			client: server.Client(),
+		}
+
 		// ACT
-		userInfo, err := GetUserInfo(tokens)
+		userInfo, err :=  testClient.GetUserInfo(tokens)
 
 		// ASSERT
 		if assert.Error(t, err) {
@@ -122,12 +125,13 @@ func TestGetUserInfo_Unauthenticated(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Replace the base URL with the test server URL
-	http.DefaultClient = server.Client()
-	baseURL = server.URL
+	testClient := BackendClient{
+		baseURL: server.URL,
+		client: server.Client(),
+	}
 
 	// ACT
-	userInfo, err := GetUserInfo(tokens)
+	userInfo, err := testClient.GetUserInfo(tokens)
 
 	// ASSERT
 	if assert.Error(t, err) {

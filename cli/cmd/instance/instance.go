@@ -1,6 +1,10 @@
 package instance
 
 import (
+	"cli/internal/authentication"
+	"cli/internal/backend"
+	"cli/internal/messages"
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -9,18 +13,42 @@ import (
 func init() {
 	InstanceCmd.AddCommand(createCmd)
 	InstanceCmd.AddCommand(deleteCmd)
-	InstanceCmd.AddCommand(startCmd)
-	InstanceCmd.AddCommand(stopCmd)
 }
 
 // Instance Command
 //
 // Displays information about a specific instance
 var InstanceCmd = &cobra.Command{
-	Use:   "instance",
-	Short: "Add short description", // TODO: Add short description
-	Long:  "Add long description",  // TODO: Add long description
+	Use:   "instance [instance_id]",
+	Short: "Displays information about a specific instance", 
+	Long:  "Displays information about a specific instance",
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("'ihp instance' called")
+		id := args[0]
+		
+		tokens := authentication.GetCurrentAuthentication()
+		if tokens == nil {
+			messages.DisplayNotLoggedInMessage()
+			return
+		}
+
+		instance, err := backend.DefaultBackendClient.GetUserInstance(tokens.AccessToken, id, true)
+		if err != nil {
+			handleGetError(err)
+			return
+		}
+
+		fmt.Println(instance.String())
 	},
+}
+
+func handleGetError(err error) {
+	if errors.Is(err, backend.ErrNotAuthenticated) {
+		messages.DisplaySessionExpiredMessage()
+		return
+	} else if err != nil {
+		fmt.Println("Unable to get your instance:", err)
+		fmt.Println("Please try again later.")
+		return
+	}
 }

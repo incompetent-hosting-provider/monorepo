@@ -16,17 +16,15 @@ import (
 
 func TestMakePurchaseRequest_RequestParams(t *testing.T) {
 	// ARRANGE
-	tokens := authentication.SessionTokens{
-		AccessToken: "valid_token",
-	}
-	purchase := 10
+	testToken := authentication.AccessToken("dummy-token")
+	testPurchaseAmount := 10
 
 	// Create a mock server
 	mockServer := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/payment", r.URL.Path)
 			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "Bearer "+ string(tokens.AccessToken), r.Header.Get("Authorization"))
+			assert.Equal(t, "Bearer "+ string(testToken), r.Header.Get("Authorization"))
 
 			reqBody, err := io.ReadAll(r.Body);
 			assert.NoError(t, err)
@@ -34,27 +32,26 @@ func TestMakePurchaseRequest_RequestParams(t *testing.T) {
 			var reqBodyMap map[string]any
 			err = json.Unmarshal(reqBody, &reqBodyMap)
 			assert.NoError(t, err)
-			assert.Equal(t, purchase, reqBodyMap["amount"].(int))
+			assert.EqualValues(t, testPurchaseAmount, reqBodyMap["amount"])
 
 			w.WriteHeader(200)
 		}),
 	)
 	defer mockServer.Close()
-	
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
-	
+
+	testClient := BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
+
 	// ACT
-	_, _ = makePurchaseRequest(tokens, 100)
+	_, _ = testClient.PurchaseCredits(testToken, testPurchaseAmount, true)
 }
 
 func TestMakePurchaseRequest_Success(t *testing.T) {
 	// ARRANGE
-	tokens := authentication.SessionTokens{
-		AccessToken: "valid_token",
-	}
-	purchase := 10
+	testToken := authentication.AccessToken("valid-token")
+	testPurchaseAmount := 10
 	expectedNewBalance := 100
 
 	// Create a mock server that returns an 200 response
@@ -66,13 +63,14 @@ func TestMakePurchaseRequest_Success(t *testing.T) {
 	)
 	defer mockServer.Close()
 	
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
+	testClient := BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
 
 
 	// ACT
-	balance, err := makePurchaseRequest(tokens, purchase)
+	balance, err := testClient.PurchaseCredits(testToken, testPurchaseAmount, true)
 
 	// ASSERT
 	assert.NoError(t, err)
@@ -81,10 +79,8 @@ func TestMakePurchaseRequest_Success(t *testing.T) {
 
 func TestMakePurchaseRequest_InternalServerError(t *testing.T) {
 	// ARRANGE
-	purchase := 10
-	tokens := authentication.SessionTokens{
-		AccessToken: "valid_token",
-	}
+	testPurchaseAmount := 10
+	testToken := authentication.AccessToken("valid-token")
 
 	// Create a mock server that returns an 500 response
 	mockErrorResponseCode := http.StatusInternalServerError
@@ -96,12 +92,13 @@ func TestMakePurchaseRequest_InternalServerError(t *testing.T) {
 	)
 	defer mockServer.Close()
 	
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
+	testClient := BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
 
 	// ACT
-	balance, err := makePurchaseRequest(tokens, purchase)
+	balance, err := testClient.PurchaseCredits(testToken, testPurchaseAmount, true)
 	
 	// ASSERT
 	if assert.Error(t, err) {
@@ -113,10 +110,8 @@ func TestMakePurchaseRequest_InternalServerError(t *testing.T) {
 
 func TestMakePurchaseRequest_Unauthenticated(t *testing.T) {
 	// ARRANGE
-	purchase := 10
-	tokens := authentication.SessionTokens{
-		AccessToken: "valid_token",
-	}
+	testPurchaseAmount := 10
+	testToken := authentication.AccessToken("invalid-token")
 
 	// Create a mock server that returns an 500 response
 	mockErrorResponseCode := http.StatusUnauthorized
@@ -127,13 +122,14 @@ func TestMakePurchaseRequest_Unauthenticated(t *testing.T) {
 		}),
 	)
 	defer mockServer.Close()
-	
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
+
+	testClient := BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
 
 	// ACT
-	balance, err := makePurchaseRequest(tokens, purchase)
+	balance, err := testClient.PurchaseCredits(testToken, testPurchaseAmount, true)
 	
 	// ASSERT
 	if assert.Error(t, err) {

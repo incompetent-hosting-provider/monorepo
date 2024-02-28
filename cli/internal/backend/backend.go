@@ -7,15 +7,22 @@ import (
 	"net/http"
 )
 
-// ERRORS
 var (
 	ErrNotAuthenticated = fmt.Errorf("not authenticated")
 )
 
-var baseURL = "http://localhost:8081"
+type BackendClient struct {
+	baseURL string
+	client *http.Client
+}
 
-func getAuthenticatedRequest(method string, path string, accessToken authentication.AccessToken, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(method, baseURL + path, body)
+var DefaultBackendClient = &BackendClient{
+	baseURL: "http://localhost:8081",
+	client: &http.Client{},
+}
+
+func (client BackendClient) buildAuthenticatedRequest(method string, path string, accessToken authentication.AccessToken, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequest(method, client.baseURL + path, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create authenticated request: %w", err)
 	}

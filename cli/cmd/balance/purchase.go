@@ -39,7 +39,7 @@ The amount parameter specifies the number of credits to purchase.`,
 		}
 		
 		fmt.Printf("Purchasing %d credits...\n", purchaseAmount)
-		newAmount, err := backend.Purchase(*tokens, purchaseAmount)
+		newAmount, err := backend.DefaultBackendClient.PurchaseCredits(tokens.AccessToken, purchaseAmount, true)
 		if err != nil {
 			if errors.Is(err, backend.ErrNotAuthenticated) {
 				messages.DisplaySessionExpiredMessage()

@@ -28,7 +28,7 @@ var BalanceCmd = &cobra.Command{
 			return
 		}
 
-		amount, err := backend.GetBalance(*tokens)
+		amount, err := backend.DefaultBackendClient.GetBalance(tokens.AccessToken, true)
 		if errors.Is(err, backend.ErrNotAuthenticated) {
 			messages.DisplaySessionExpiredMessage()
 			return

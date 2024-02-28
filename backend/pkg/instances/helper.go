@@ -33,5 +33,6 @@ func serializeDetailedInstanceResponse(instance db_instances.InstancesTable) Ins
 		CreatedAt:      instance.CreatedAt,
 		StartedAt:      instance.StartedAt,
 		ContainerPorts: instance.ContainerPorts,
+		Description: instance.ContainerDescription,
 	}
 }
