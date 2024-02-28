@@ -2,7 +2,7 @@ version: '3'
 
 volumes:
   prometheus_data: {}
-  grafana-storage: {}
+  grafana_data: {}
 
 
 services:
@@ -77,11 +77,11 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml/prometheus.yml:/etc/prometheus.yml/prometheus.yml
       - prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
+      - "--config.file=/etc/prometheus.yml/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
 
   #loki
   loki:
@@ -95,7 +95,7 @@ services:
     container_name: grafana
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
       - ./grafana/provisioning/dashboard:/etc/grafana/provisioning/dashboard
