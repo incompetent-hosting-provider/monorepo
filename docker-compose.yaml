@@ -1,5 +1,10 @@
 version: '3'
 
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
+
 services:
 
   rabbitmq:
@@ -65,3 +70,37 @@ services:
       retries: 5
       start_period: 20s
       timeout: 10s
+
+  #prometheus
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+
+  #loki
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+
+  #grafana
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/provisioning/dashboards/backend_dashboard.json"
+
+      #credentials: admin, pw: ihp_admin

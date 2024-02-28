@@ -79,4 +79,5 @@ $RECYCLE.BIN/
 
 # Exclude docker compose data dirs
 
-docker
+docker/dynamodb
+docker/rabbitmq

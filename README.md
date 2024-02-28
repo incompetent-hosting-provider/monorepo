@@ -48,6 +48,14 @@ All these test users use a default password "Test123"
 
 ## Additional
 
+### Grafana
+
+Credentials:
+```sh
+admin
+admin
+```
+
 ## Ports
 
 Keycloak: 8080   
