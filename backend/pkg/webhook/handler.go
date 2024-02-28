@@ -22,7 +22,7 @@ type KeycloakWebookPayload struct {
 // @Description 				Handle keycloak SPI webhook events
 // @Tags 						webhook
 //
-// @Success 					200 {object} payment.BalanceResponse
+// @Success 					200 {string} string	"ok"
 //
 // @Failure						500 {object} util.ErrorResponse
 //

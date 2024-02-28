@@ -403,9 +403,9 @@ const docTemplate = `{
                 "summary": "SPI webhook handler",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/payment.BalanceResponse"
+                            "type": "string"
                         }
                     },
                     "500": {
