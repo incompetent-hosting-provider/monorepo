@@ -20,6 +20,14 @@ func NewTfBin(install_directory string, required_version string, working_directo
 	}
 }
 
+func (i *TerraformBinary) InitTerraform() error {
+	tf, err := i.GetInstance()
+	if err != nil {
+		return err
+	}
+	return tf.Init(context.Background(), tfexec.Upgrade(true))
+}
+
 func (i *TerraformBinary) GetInstance() (*tfexec.Terraform, error) {
 	return i.tfbin.GetInstance()
 }

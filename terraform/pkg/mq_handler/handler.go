@@ -11,7 +11,7 @@ type MqHandler struct {
 	mqConn                           *amqp.Connection
 	CustomContainerStartEventChannel chan CustomContainerStartEvent
 	PresetContainerStartEventChannel chan PresetContainerStartEvent
-	StopContainerEventChannel        chan StopContainerEvent
+	DestroyContainerEventChannel     chan DeystroyContainerEvent
 	channel                          *amqp.Channel
 }
 
@@ -36,10 +36,10 @@ func (m *MqHandler) Init() {
 
 	m.CustomContainerStartEventChannel = make(chan CustomContainerStartEvent)
 	m.PresetContainerStartEventChannel = make(chan PresetContainerStartEvent)
-	m.StopContainerEventChannel = make(chan StopContainerEvent)
+	m.DestroyContainerEventChannel = make(chan DeystroyContainerEvent)
 
 	go forwardQueueToChannel[CustomContainerStartEvent](ch, "CustomContainerStartQueue", m.CustomContainerStartEventChannel)
 	go forwardQueueToChannel[PresetContainerStartEvent](ch, "PresetContainerStartQueue", m.PresetContainerStartEventChannel)
-	go forwardQueueToChannel[StopContainerEvent](ch, "StopContainerQueue", m.StopContainerEventChannel)
+	go forwardQueueToChannel[DeystroyContainerEvent](ch, "StopContainerQueue", m.DestroyContainerEventChannel)
 
 }

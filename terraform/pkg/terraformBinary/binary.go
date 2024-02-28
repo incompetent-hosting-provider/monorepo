@@ -34,6 +34,16 @@ func ensureTerraform(binary_dir string, terraform_version string, terraform_dir 
 	log.Debug().Msgf("Ensuring terraform version %s", terraform_version)
 	execPath := filepath.Join(binary_dir, "terraform")
 
+	// Check if the binary directory exists
+	if _, err := os.Stat(binary_dir); os.IsNotExist(err) {
+		log.Debug().Msgf("Binary directory %s not found", binary_dir)
+		log.Info().Msg("Binary directory not found, creating...")
+		err := os.Mkdir(binary_dir, 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Check if the terraform binary is already present
 	if _, err := os.Stat(execPath); os.IsNotExist(err) {
 		log.Debug().Msgf("Terraform binary not found at %s", execPath)

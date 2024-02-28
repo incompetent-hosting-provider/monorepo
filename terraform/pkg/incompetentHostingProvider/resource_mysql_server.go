@@ -3,7 +3,6 @@ package incompetenthostingprovider
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 	"strings"
 
 	"goterra/pkg/helper"
@@ -14,8 +13,8 @@ import (
 	log "github.com/rs/zerolog/log"
 )
 
-func GetMySQLContainers(tf *tfexec.Terraform) (map[int]DockerMySQL, error) {
-	mysql_containers := make(map[int]DockerMySQL)
+func GetMySQLContainers(tf *tfexec.Terraform) (map[string]DockerMySQL, error) {
+	mysql_containers := make(map[string]DockerMySQL)
 
 	state, err := tf.Show(context.TODO())
 	if err != nil {
@@ -32,10 +31,8 @@ func GetMySQLContainers(tf *tfexec.Terraform) (map[int]DockerMySQL, error) {
 					return nil, err
 				}
 
-				uid, err := strconv.Atoi(strings.Split(container.AttributeValues["name"].(string), "-")[2])
-				if err != nil {
-					return nil, err
-				}
+				uid := strings.Split(container.AttributeValues["name"].(string), "-")[2]
+
 				port_external, err := container.AttributeValues["ports"].([]interface{})[0].(map[string]interface{})["external"].(json.Number).Int64()
 				if err != nil {
 					return nil, err
@@ -52,12 +49,12 @@ func GetMySQLContainers(tf *tfexec.Terraform) (map[int]DockerMySQL, error) {
 	return mysql_containers, nil
 }
 
-func AddIhpMySqlContainer(tfbin *TerraformBinary, uid int, mysql_root_password string) (*tfjson.State, error) {
-	log.Debug().Msgf("Adding container with UID %d", uid)
+func AddIhpMySqlContainer(tfbin *TerraformBinary, uid string, mysql_root_password string) (*tfjson.State, error) {
+	log.Debug().Msgf("Adding container with UID %s", uid)
 	// Checking the length of the UID is obligatory, the length of the datatype int is lower than 114
 	// The maxium length of a docker container name is 128, 114 is the length minus the prefix
-	if uid < 0 && len(strconv.Itoa(uid)) < 114 {
-		log.Error().Msgf("UID %d is invalid", uid)
+	if len(uid) > 114 {
+		log.Error().Msgf("UID %s is invalid", uid)
 		return nil, helper.NewCustomError("Invalid UID")
 	}
 
@@ -83,21 +80,21 @@ func AddIhpMySqlContainer(tfbin *TerraformBinary, uid int, mysql_root_password s
 		return state, nil
 
 	} else if err != nil {
-		log.Error().Msgf("Error checking if container with UID %d exists: %s", uid, err)
+		log.Error().Msgf("Error checking if container with UID %s exists: %s", uid, err)
 		return nil, err
 
 	} else {
-		log.Error().Msgf("Container with UID %d already exists", uid)
+		log.Error().Msgf("Container with UID %s already exists", uid)
 		return nil, helper.NewCustomError("Container with UID already exists")
 
 	}
 }
 
-func RemoveIhpMySqlContainer(tfbin *TerraformBinary, uid int) (*tfjson.State, error) {
-	log.Debug().Msgf("Removing container with UID %d", uid)
+func RemoveIhpMySqlContainer(tfbin *TerraformBinary, uid string) (*tfjson.State, error) {
+	log.Debug().Msgf("Removing container with UID %s", uid)
 	// Checking the length of the UID is obligatory, the length of the datatype int is lower than 114
-	if uid < 0 && len(strconv.Itoa(uid)) < 114 {
-		log.Error().Msgf("UID %d is invalid", uid)
+	if len(uid) > 114 {
+		log.Error().Msgf("UID %s is invalid", uid)
 		return nil, helper.NewCustomError("Invalid UID")
 	}
 
@@ -125,17 +122,17 @@ func RemoveIhpMySqlContainer(tfbin *TerraformBinary, uid int) (*tfjson.State, er
 		return state, nil
 
 	} else if err != nil {
-		log.Error().Msgf("Error checking if container with UID %d exists: %s", uid, err)
+		log.Error().Msgf("Error checking if container with UID %s exists: %s", uid, err)
 		return nil, err
 
 	} else {
-		log.Error().Msgf("Container with UID %d does not exist", uid)
+		log.Error().Msgf("Container with UID %s does not exist", uid)
 		return nil, helper.NewCustomError("Container with UID does not exist")
 
 	}
 }
 
-func GetContainerWithUid(tf *tfexec.Terraform, uid int) (DockerMySQL, error) {
+func GetContainerWithUid(tf *tfexec.Terraform, uid string) (DockerMySQL, error) {
 	containers, err := GetMySQLContainers(tf)
 	if err != nil {
 		return DockerMySQL{}, err
@@ -148,7 +145,7 @@ func GetContainerWithUid(tf *tfexec.Terraform, uid int) (DockerMySQL, error) {
 	}
 }
 
-func containerWithUidExists(tf *tfexec.Terraform, uid int) (bool, error) {
+func containerWithUidExists(tf *tfexec.Terraform, uid string) (bool, error) {
 	containers, err := GetMySQLContainers(tf)
 	if err != nil {
 		return false, err

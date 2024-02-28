@@ -15,7 +15,7 @@ type Env struct {
 	// MySQL docker name prefix
 	MySQLDockerNamePrefix string `json:"tfDocker_mysql_name_prefix"`
 	// MySQL uids
-	MySQLUIDs []int `json:"tfDocker_uids"`
+	MySQLUIDs []string `json:"tfDocker_uids"`
 }
 
 func CompareCustomEnv(tf_env_current Env, tf_env_new Env) bool {
@@ -59,7 +59,7 @@ func WriteCustomEnv(path string, tf_env Env) error {
 	return nil
 }
 
-func varInSlice(a int, list []int) bool {
+func varInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
 			return true
@@ -68,9 +68,9 @@ func varInSlice(a int, list []int) bool {
 	return false
 }
 
-func (c *Env) AddMySqlContainer(uid int, port_external int, mysql_root_password string) error {
+func (c *Env) AddMySqlContainer(uid string, port_external int, mysql_root_password string) error {
 	if !varInSlice(uid, c.GetMySQLUIDs()) {
-		log.Debug().Msgf("Adding MySQL container with UID %d", uid)
+		log.Debug().Msgf("Adding MySQL container with UID %s", uid)
 
 		c.SetMySQLUIDs(append(c.GetMySQLUIDs(), uid))
 	} else {
@@ -85,7 +85,7 @@ func (c *Env) RemoveMySqlContainer(index int) error {
 		return helper.NewCustomError("Index out of range")
 	}
 
-	log.Debug().Msgf("Removing MySQL container with UID %d", c.GetMySQLUIDs()[index])
+	log.Debug().Msgf("Removing MySQL container with UID %s", c.GetMySQLUIDs()[index])
 
 	c.SetMySQLUIDs(append(c.GetMySQLUIDs()[:index], c.GetMySQLUIDs()[index+1:]...))
 
@@ -97,7 +97,7 @@ func (c *Env) GetMySQLDockerNamePrefix() string {
 	return c.MySQLDockerNamePrefix
 }
 
-func (c *Env) GetMySQLUIDs() []int {
+func (c *Env) GetMySQLUIDs() []string {
 	return c.MySQLUIDs
 }
 
@@ -106,6 +106,6 @@ func (c *Env) SetMySQLDockerNamePrefix(name_prefix string) {
 	c.MySQLDockerNamePrefix = name_prefix
 }
 
-func (c *Env) SetMySQLUIDs(uids []int) {
+func (c *Env) SetMySQLUIDs(uids []string) {
 	c.MySQLUIDs = uids
 }

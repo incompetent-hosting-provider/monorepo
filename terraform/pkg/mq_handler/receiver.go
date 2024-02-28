@@ -5,7 +5,7 @@ import (
 	log "github.com/rs/zerolog/log"
 )
 
-func forwardQueueToChannel[T CustomContainerStartEvent | PresetContainerStartEvent | StopContainerEvent](ch *amqp.Channel, queueName string, targetChannel chan T) {
+func forwardQueueToChannel[T CustomContainerStartEvent | PresetContainerStartEvent | DeystroyContainerEvent](ch *amqp.Channel, queueName string, targetChannel chan T) {
 	q, err := ch.QueueDeclare(
 		queueName,
 		false, // durable
@@ -41,7 +41,7 @@ func forwardQueueToChannel[T CustomContainerStartEvent | PresetContainerStartEve
 		in := <-qc
 		out, err := parseReceivedEvent[T](in.Body)
 		if err == nil {
-			log.Debug().Msgf("Received event %v", out)
+			log.Debug().Msg("Received event")
 			targetChannel <- out
 		}
 	}
