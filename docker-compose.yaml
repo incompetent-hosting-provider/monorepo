@@ -4,9 +4,6 @@ volumes:
   prometheus_data: {}
   grafana-storage: {}
 
-networks:
-  loki-net:
-    external: true
 
 services:
 
@@ -91,8 +88,6 @@ services:
     image: grafana/loki:latest
     ports:
       - "3100:3100"
-    networks:
-      - loki-net
 
   #grafana
   grafana:
