@@ -5,8 +5,8 @@ volumes:
   grafana-storage: {}
 
 networks:
-  monitoring:
-    driver: bridge
+  loki-net:
+    external: true
 
 services:
 
@@ -85,6 +85,14 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+
+  #loki
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    networks:
+      - loki-net
 
   #grafana
   grafana:
