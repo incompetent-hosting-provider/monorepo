@@ -118,7 +118,6 @@ jobs:
   docker-build:
     needs: 
       - test
-      - golangci
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
