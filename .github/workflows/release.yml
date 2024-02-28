@@ -1,25 +1,51 @@
-name: release
+name: Release
 
 on:
-  #release:
-    #types: [ published ]
-  push:
-    branches:
-      - 16-setup-ci-for-backend
+  release:
+    types: [ created ]
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
-  publish_backend:
+  # publish_backend:
+  #   runs-on: "ubuntu-latest"
+  #   defaults:
+  #     run:
+  #       working-directory: backend
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - name: Build and publish backend
+  #       uses: macbre/push-to-ghcr@master
+  #       with:
+  #         context: ./backend/
+  #         dockerfile: ./backend/Dockerfile
+  #         image_name: incompetent-hosting-provider/ihp-backend
+  #         github_token: ${{ secrets.GH_API_TOKEN_GHPR }}
+
+  publish_cli:
     runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        os: [linux, windows, macos]
     defaults:
       run:
-        working-directory: backend
+        working-directory: cli
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Build and publish backend
-        uses: macbre/push-to-ghcr@master
+      - uses: actions/checkout@v4
+      
+      - uses: wangyoucao577/go-release-action@v1
         with:
-          context: ./backend/
-          dockerfile: ./backend/Dockerfile
-          image_name: incompetent-hosting-provider/backend
+          binary_name: ihp-cli
           github_token: ${{ secrets.GH_API_TOKEN_GHPR }}
+          goos: ${{ matrix.os }}
+          goarch: amd64
+
+      - uses: wangyoucao577/go-release-action@v1
+        with:
+          binary_name: ihp-cli
+          github_token: ${{ secrets.GH_API_TOKEN_GHPR }}
+          goos: ${{ matrix.os }}
+          goarch: 386
