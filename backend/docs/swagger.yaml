@@ -6,11 +6,6 @@ definitions:
       version:
         type: string
     type: object
-  instances.CreateContainerResponse:
-    properties:
-      id:
-        type: string
-    type: object
   instances.CreateCustomContainerBody:
     properties:
       description:
@@ -36,6 +31,11 @@ definitions:
         type: string
       preset:
         type: integer
+    type: object
+  instances.CustomContainerCreatedResponse:
+    properties:
+      id:
+        type: string
     type: object
   instances.InstanceInfo:
     properties:
@@ -79,6 +79,15 @@ definitions:
         items:
           $ref: '#/definitions/instances.InstanceInfo'
         type: array
+    type: object
+  instances.PresetContainerCreatedResponse:
+    properties:
+      env_vars:
+        additionalProperties:
+          type: string
+        type: object
+      id:
+        type: string
     type: object
   payment.BalanceIncreaseBody:
     properties:
@@ -222,7 +231,7 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/instances.CreateContainerResponse'
+            $ref: '#/definitions/instances.CustomContainerCreatedResponse'
         "401":
           description: Unauthorized
           schema:
@@ -259,7 +268,7 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/instances.CreateContainerResponse'
+            $ref: '#/definitions/instances.PresetContainerCreatedResponse'
         "401":
           description: Unauthorized
           schema:

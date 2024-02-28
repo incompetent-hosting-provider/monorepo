@@ -76,7 +76,7 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/instances.CreateContainerResponse"
+                            "$ref": "#/definitions/instances.CustomContainerCreatedResponse"
                         }
                     },
                     "401": {
@@ -133,7 +133,7 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/instances.CreateContainerResponse"
+                            "$ref": "#/definitions/instances.PresetContainerCreatedResponse"
                         }
                     },
                     "401": {
@@ -473,14 +473,6 @@ const docTemplate = `{
                 }
             }
         },
-        "instances.CreateContainerResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
         "instances.CreateCustomContainerBody": {
             "type": "object",
             "properties": {
@@ -518,6 +510,14 @@ const docTemplate = `{
                 },
                 "preset": {
                     "type": "integer"
+                }
+            }
+        },
+        "instances.CustomContainerCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 }
             }
         },
@@ -584,6 +584,20 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/instances.InstanceInfo"
                     }
+                }
+            }
+        },
+        "instances.PresetContainerCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "env_vars": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
                 }
             }
         },

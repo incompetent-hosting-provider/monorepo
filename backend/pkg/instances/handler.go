@@ -35,7 +35,11 @@ type CreateCustomContainerBody struct {
 	Ports         []int                     `json:"ports"`
 }
 
-type CreateContainerResponse struct {
+type PresetContainerCreatedResponse struct {
+	ContainerId  string            `json:"id"`
+	ContainerEnv map[string]string `json:"env_vars"`
+}
+type CustomContainerCreatedResponse struct {
 	ContainerId string `json:"id"`
 }
 
@@ -74,7 +78,7 @@ type InstancesInfoReponse struct {
 //
 // @Param request body instances.CreatePresetContainerBody true "query params"
 //
-// @Success 					202 {object} instances.CreateContainerResponse
+// @Success 					202 {object} instances.PresetContainerCreatedResponse
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
@@ -146,8 +150,9 @@ func CreatePresetContainerHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, CreateContainerResponse{
-		ContainerId: containerId,
+	c.JSON(http.StatusAccepted, PresetContainerCreatedResponse{
+		ContainerId:  containerId,
+		ContainerEnv: generatedEnv,
 	})
 
 }
@@ -163,7 +168,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 //
 // @Param request body instances.CreateCustomContainerBody true "query params"
 //
-// @Success 					202 {object} instances.CreateContainerResponse
+// @Success 					202 {object} instances.CustomContainerCreatedResponse
 //
 // @Failure						401 {object} util.ErrorResponse
 // @Failure						404 {object} util.ErrorResponse
@@ -221,7 +226,7 @@ func CreateCustomContainerHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, CreateContainerResponse{
+	c.JSON(http.StatusAccepted, CustomContainerCreatedResponse{
 		ContainerId: containerId,
 	})
 }

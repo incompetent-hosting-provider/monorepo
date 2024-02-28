@@ -141,7 +141,10 @@ Response
 
 ```json
 {
-  "id": "dasdhjsk"
+  "id": "dasdhjsk",
+  "env_vars": {
+    "..": ".."
+  }
 }
 ```
 

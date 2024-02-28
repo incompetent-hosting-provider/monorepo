@@ -65,7 +65,7 @@
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/instances.CreateContainerResponse"
+                            "$ref": "#/definitions/instances.CustomContainerCreatedResponse"
                         }
                     },
                     "401": {
@@ -122,7 +122,7 @@
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/instances.CreateContainerResponse"
+                            "$ref": "#/definitions/instances.PresetContainerCreatedResponse"
                         }
                     },
                     "401": {
@@ -462,14 +462,6 @@
                 }
             }
         },
-        "instances.CreateContainerResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
         "instances.CreateCustomContainerBody": {
             "type": "object",
             "properties": {
@@ -507,6 +499,14 @@
                 },
                 "preset": {
                     "type": "integer"
+                }
+            }
+        },
+        "instances.CustomContainerCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 }
             }
         },
@@ -573,6 +573,20 @@
                     "items": {
                         "$ref": "#/definitions/instances.InstanceInfo"
                     }
+                }
+            }
+        },
+        "instances.PresetContainerCreatedResponse": {
+            "type": "object",
+            "properties": {
+                "env_vars": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
                 }
             }
         },
