@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 
-	helper "goterra/pkg/helper"
-	ihp "goterra/pkg/incompetentHostingProvider"
 	logging "goterra/pkg/logging"
+	mqhandler "goterra/pkg/mq_handler"
 
 	log "github.com/rs/zerolog/log"
 )
@@ -28,33 +26,53 @@ func main() {
 	logging.InitLogger()
 	log.Info().Msg("Starting GoTerra")
 
-	ihpTfBin := ihp.NewTfBin(tf_bin_dir, tf_version, tf_cwd_dir, tf_envs_names)
+	//	ihpTfBin := ihp.NewTfBin(tf_bin_dir, tf_version, tf_cwd_dir, tf_envs_names)
 
-	uidsToRemove := []int{}
+	mq := mqhandler.MqHandler{}
+	mq.Init()
 
-	uidsToAdd := []int{}
-	passwordsForUidsToAdd := []string{"password4"}
-
-	for i := range uidsToRemove {
-		_, err := ihp.RemoveIhpMySqlContainer(ihpTfBin, uidsToRemove[i])
-		helper.HandleError(err, "Error removing mysql container")
+	for {
+		select {
+		case event := <-mq.CustomContainerStartEventChannel:
+			// TODO: do something with this
+			log.Debug().Msgf("Received custom start event: %v", event)
+		case event := <-mq.PresetContainerStartEventChannel:
+			// TODO: do something with this
+			log.Debug().Msgf("Received preset start event: %v", event)
+		case event := <-mq.StopContainerEventChannel:
+			// TODO: do something with this
+			log.Debug().Msgf("Received delete event: %v", event)
+		}
 	}
 
-	for i := range uidsToAdd {
-		_, err := ihp.AddIhpMySqlContainer(ihpTfBin, uidsToAdd[i], passwordsForUidsToAdd[i])
-		helper.HandleError(err, "Error adding mysql container")
-	}
+	/*
 
-	// _, err = ihpTfBin.ApplyTerraform([]ihp.DockerMySQL{}, []ihp.DockerMySQL{})
-	// helper.HandleError(err, "Error applying terraform")
+		uidsToRemove := []int{}
 
-	state, err := ihpTfBin.GetState()
-	helper.HandleError(err, "Error getting terraform state")
+		uidsToAdd := []int{}
+		passwordsForUidsToAdd := []string{"password4"}
 
-	if state.Values != nil {
-		current_num_mysql_containers := state.Values.Outputs["current_num_mysql_containers"].Value.(json.Number)
-		log.Debug().Msgf("current_num_mysql_containers: %v", current_num_mysql_containers)
-	}
+		for i := range uidsToRemove {
+			_, err := ihp.RemoveIhpMySqlContainer(ihpTfBin, uidsToRemove[i])
+			helper.HandleError(err, "Error removing mysql container")
+		}
+
+		for i := range uidsToAdd {
+			_, err := ihp.AddIhpMySqlContainer(ihpTfBin, uidsToAdd[i], passwordsForUidsToAdd[i])
+			helper.HandleError(err, "Error adding mysql container")
+		}
+
+		// _, err = ihpTfBin.ApplyTerraform([]ihp.DockerMySQL{}, []ihp.DockerMySQL{})
+		// helper.HandleError(err, "Error applying terraform")
+
+		state, err := ihpTfBin.GetState()
+		helper.HandleError(err, "Error getting terraform state")
+
+		if state.Values != nil {
+			current_num_mysql_containers := state.Values.Outputs["current_num_mysql_containers"].Value.(json.Number)
+			log.Debug().Msgf("current_num_mysql_containers: %v", current_num_mysql_containers)
+		}
+	*/
 
 	// Exit main
 	log.Info().Msg("Exiting GoTerra")
