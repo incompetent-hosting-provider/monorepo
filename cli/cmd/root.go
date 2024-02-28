@@ -54,7 +54,7 @@ var RootCmd = &cobra.Command{
 			return
 		}
 
-		userInfo, err := backend.GetUserInfo(*tokens)
+		userInfo, err := backend.DefaultBackendClient.GetUserInfo(*tokens)
 		if err != nil {
 			if errors.Is(err, backend.ErrNotAuthenticated) {
 				// Refresh tokens and try again
@@ -69,7 +69,7 @@ var RootCmd = &cobra.Command{
 					return
 				}
 
-				userInfo, err = backend.GetUserInfo(*newTokens)
+				userInfo, err = backend.DefaultBackendClient.GetUserInfo(*newTokens)
 				if err != nil {
 					displayUnableToGetUserInfoMessage(err)
 					os.Exit(1)

@@ -10,16 +10,17 @@ import (
 func TestGetAuthenticatedRequestURL(t *testing.T) {
 	// ARRANGE
 	accessToken := authentication.AccessToken("dummyToken")
+	testReqPath := "/test"
 
 	// ACT
-	reqPath := "/test"
-	req, err := getAuthenticatedRequest("GET", reqPath, accessToken, nil)
+
+	req, err := DefaultBackendClient.buildAuthenticatedRequest("GET", testReqPath, accessToken, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
 	// ASSERT
-	expectedURL := baseURL + reqPath
+	expectedURL := DefaultBackendClient.baseURL + testReqPath
 	if req.URL.String() != expectedURL {
 		t.Errorf("unexpected URL, got: %s, want: %s", req.URL.String(), expectedURL)
 	}
@@ -30,10 +31,10 @@ func TestGetAuthenticatedRequestURL(t *testing.T) {
 func TestGetAuthenticatedRequestHeader(t *testing.T) {
 	// ARRANGE
 	accessToken := authentication.AccessToken("dummyToken")
+	reqPath := "/test"
 
 	// ACT
-	reqPath := "/test"
-	req, err := getAuthenticatedRequest("GET", reqPath, accessToken, nil)
+	req, err := DefaultBackendClient.buildAuthenticatedRequest("GET", reqPath, accessToken, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}

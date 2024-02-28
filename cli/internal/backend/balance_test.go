@@ -29,12 +29,13 @@ func TestGetBalance_RequestParams(t *testing.T) {
 	)
 	defer mockServer.Close()
 
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
+	testClient := &BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
 
 	// ACT
-	_, _ = getBalance(token)
+	_, _ = testClient.GetBalance(token, true)
 }
 
 func TestGetBalance_Success(t *testing.T) {
@@ -51,12 +52,13 @@ func TestGetBalance_Success(t *testing.T) {
 	)
 	defer mockServer.Close()
 	
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
+	testClient := &BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
 
 	// ACT
-	balance, err := getBalance(token)
+	balance, err := testClient.GetBalance(token, true)
 
 	// ASSERT
 	assert.NoError(t, err)
@@ -76,12 +78,13 @@ func TestGetBalance_InternalServerError(t *testing.T) {
 	)
 	defer mockServer.Close()
 	
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
+	testClient := &BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
 
 	// ACT
-	balance, err := getBalance(token)
+	balance, err := testClient.GetBalance(token, true)
 
 	// ASSERT
 	if assert.Error(t, err) {
@@ -105,12 +108,13 @@ func TestGetBalance_Unauthenticated(t *testing.T) {
 	)
 	defer mockServer.Close()
 	
-	// Replace the default client with the mock server client
-	http.DefaultClient = mockServer.Client()
-	baseURL = mockServer.URL
-
+	testClient := &BackendClient{
+		baseURL: mockServer.URL,
+		client: mockServer.Client(),
+	}
+	
 	// ACT
-	balance, err := getBalance(token)
+	balance, err := testClient.GetBalance(token, true)
 
 	// ASSERT
 	if assert.Error(t, err) {

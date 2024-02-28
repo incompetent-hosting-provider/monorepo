@@ -13,8 +13,8 @@ type UserInfo struct {
 	Email   string `json:"email,omitempty"`
 }
 
-func GetUserInfo(tokens authentication.SessionTokens) (*UserInfo, error) {
-	req, err := getAuthenticatedRequest("GET", "/user", tokens.AccessToken, nil)
+func (client BackendClient) GetUserInfo(tokens authentication.SessionTokens) (*UserInfo, error) {
+	req, err := client.buildAuthenticatedRequest("GET", "/user", tokens.AccessToken, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build request for user info: %w", err)
 	}

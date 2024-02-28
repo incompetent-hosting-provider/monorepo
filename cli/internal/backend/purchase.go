@@ -4,42 +4,26 @@ import (
 	"bytes"
 	"cli/internal/authentication"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 )
+type PurchaseCreditsRequest struct {
+	Amount int `json:"amount"`
+}
 
-type PurchaseResponse struct {
+type PurchaseCreditsResponse struct {
 	Balance int `json:"balance"`
 }
 
-// Purchase credits for the user associated to the tokens provided.
-func Purchase(tokens authentication.SessionTokens, amount int) (int, error) {
-	newAmount, err := makePurchaseRequest(tokens, amount)
-	if err != nil && errors.Is(err, ErrNotAuthenticated) {
-		newTokens, err := authentication.RefreshTokens()
-		if err != nil || newTokens != nil{
-			return 0, fmt.Errorf("failed to purchase credits: %w: %w", ErrNotAuthenticated, err)
-		}
-
-		return makePurchaseRequest(*newTokens, amount)
-	} else if err != nil {
-		return 0, err
-	}
-
-	return newAmount, nil
-}
-
-func makePurchaseRequest(tokens authentication.SessionTokens, amount int) (int, error){
-	reqJson, err := json.Marshal(map[string]any{
-		"amount": amount,
-	})
+// PurchaseCredits credits for the user associated to the tokens provided.
+func (client BackendClient) PurchaseCredits(token authentication.AccessToken, amount int, retryAuth bool) (int, error){
+	reqBody, err := json.Marshal(PurchaseCreditsRequest{Amount: amount})
 	if err != nil {
 		return 0, fmt.Errorf("failed to create purchase request: %w", err)
 	}
 
-	req, err := getAuthenticatedRequest("POST", "/payment", tokens.AccessToken, bytes.NewBuffer(reqJson))
+	req, err := client.buildAuthenticatedRequest("POST", "/payment", token, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return 0, fmt.Errorf("failed to create purchase request: %w", err)
 	}
@@ -57,7 +41,16 @@ func makePurchaseRequest(tokens authentication.SessionTokens, amount int) (int, 
 	case 201:
 		break
 	case 401:
-		return 0, fmt.Errorf("failed to purchase credits: %w", ErrNotAuthenticated)
+		if retryAuth {
+			newTokens, err := authentication.RefreshTokens()
+			if err != nil || newTokens == nil{
+				return 0, fmt.Errorf("failed to purchase credits: %w: %w", ErrNotAuthenticated, err)
+			}
+	
+			return client.PurchaseCredits(newTokens.AccessToken, amount, false)
+		} else {
+			return 0, fmt.Errorf("failed to purchase credits: %w", ErrNotAuthenticated)
+		}
 	default:
 		return 0, fmt.Errorf("failed to purchase credits: %s", resp.Status)
 	}
@@ -67,7 +60,7 @@ func makePurchaseRequest(tokens authentication.SessionTokens, amount int) (int, 
 		return 0, fmt.Errorf("failed to read response body of purchase request: %w", err)
 	}
 
-	var purchaseResponse PurchaseResponse
+	var purchaseResponse PurchaseCreditsResponse
 	err = json.Unmarshal(body, &purchaseResponse)
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse response body of purchase request: %w", err)
