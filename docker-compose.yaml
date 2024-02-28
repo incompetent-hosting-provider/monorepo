@@ -64,11 +64,7 @@ services:
       - AWS_SESSION_TOKEN=dummy
       - KEYCLOAK_CERT_ENDPOINT_URL=http://keycloak:8080/realms/ihp-realm/protocol/openid-connect/certs
       - MQ_CONN_STRING=amqp://guest:guest@rabbitmq:5672/
-<<<<<<< HEAD
       - LOKI_HOST=http://loki:3100
-=======
-      - LOKI_HOST=http://loki
->>>>>>> 4df20b680d19888844726b8d967f5d945f61f731
     healthcheck:
       test: curl --fail http://localhost:8081/health || exit 1
       interval: 60s
