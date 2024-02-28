@@ -45,7 +45,7 @@ func listenForEvents(mq *mqhandler.MqHandler, mq_preset_container_events *[]mqha
 		case event := <-mq.DestroyContainerEventChannel:
 			// TODO: do something with this
 			log.Debug().Msgf("Received delete event: %v", event)
-			log.Warn().Msg("CustomContainerStartEventChannel not implemented")
+			log.Warn().Msg("DestroyContainerEventChannel not implemented")
 		}
 	}
 }
@@ -56,9 +56,6 @@ func main() {
 
 	ihpTfBin := ihp.NewTfBin(tf_bin_dir, tf_version, tf_cwd_dir, tf_envs_names)
 	ihpTfBin.InitTerraform()
-
-	// Set env var
-	os.Setenv("MQ_CONNECTION_STRING", "amqp://guest:guest@localhost:5672/")
 
 	mq_preset_container_events := []mqhandler.PresetContainerStartEvent{}
 
