@@ -169,17 +169,24 @@ func GetPresetById(presetId int) (PresetTable, error) {
 
 	conn := db.GetDynamoConn()
 
-	params := &dynamodb.GetItemInput{
+	params := dynamodb.GetItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Key: map[string]types.AttributeValue{
 			"presetid": &types.AttributeValueMemberN{Value: strconv.Itoa(presetId)},
 		},
+		ConsistentRead: aws.Bool(true),
 	}
 
-	res, err := conn.GetItem(context.TODO(), params)
+	res, err := conn.GetItem(context.TODO(), &params)
 
 	if err != nil {
+		log.Warn().Msgf("Could not fetch item due to an error: %v", err)
 		return PresetTable{}, err
+	}
+
+	// Cover edge case
+	if len(res.Item) == 0 {
+		return PresetTable{}, &types.ResourceNotFoundException{}
 	}
 
 	var preset PresetTable
