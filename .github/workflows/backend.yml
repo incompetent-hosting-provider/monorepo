@@ -64,7 +64,7 @@ jobs:
           coverage-threshold: 0
   
           # collect coverage for all packages beyond the one under test
-          cover-pkg: backend
+          cover-pkg: backend/...
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
