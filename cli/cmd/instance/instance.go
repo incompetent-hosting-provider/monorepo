@@ -9,8 +9,6 @@ import (
 func init() {
 	InstanceCmd.AddCommand(createCmd)
 	InstanceCmd.AddCommand(deleteCmd)
-	InstanceCmd.AddCommand(startCmd)
-	InstanceCmd.AddCommand(stopCmd)
 }
 
 // Instance Command
