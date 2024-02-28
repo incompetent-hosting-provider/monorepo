@@ -77,6 +77,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/complete v1.1.1 // indirect
+	github.com/rabbitmq/amqp091-go v1.9.0
 	github.com/rogpeppe/go-charset v0.0.0-20180617210344-2471d30d28b4 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/rs/zerolog v1.31.0
