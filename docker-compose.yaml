@@ -77,10 +77,10 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml/prometheus.yml:/etc/prometheus.yml/prometheus.yml
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
-      - "--config.file=/etc/prometheus.yml/prometheus.yml"
+      - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
 
   #loki
@@ -97,10 +97,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana-storage:/var/lib/grafana
-      - ./grafana/provisioning/dashboard:/etc/grafana/provisioning/dashboard
-      - ./grafana/provisioning/datasource:/etc/grafana/provisioning/datasource
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     environment:
-      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "./grafana/provisioning/dashboard/backend_dashboard.json"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/provisioning/dashboards/backend_dashboard.json"
 
       #credentials: admin, pw: ihp_admin
