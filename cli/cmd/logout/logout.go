@@ -1,7 +1,6 @@
 package logout
 
 import (
-	"cli/cmd"
 	"cli/internal/authentication"
 	"cli/internal/utils"
 	"fmt"
@@ -9,14 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd.RootCmd.AddCommand(logoutCmd)
-}
-
 // Logout Command
 //
 // Allows the user to logout from the IHP CLI
-var logoutCmd = &cobra.Command{
+var LogoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Log out of the IHP CLI",
 	Long:  "Log out of the IHP CLI. This will clear your current session.",

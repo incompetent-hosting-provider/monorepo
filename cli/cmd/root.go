@@ -1,8 +1,15 @@
 package cmd
 
 import (
+	"cli/cmd/balance"
+	"cli/cmd/instance"
+	"cli/cmd/instances"
+	"cli/cmd/login"
+	"cli/cmd/logout"
+	"cli/cmd/register"
 	"cli/internal/authentication"
 	"cli/internal/backend"
+	"cli/internal/messages"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -10,6 +17,16 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	RootCmd.AddCommand(balance.BalanceCmd)
+	RootCmd.AddCommand(instance.InstanceCmd)
+	RootCmd.AddCommand(instances.InstancesCmd)
+	RootCmd.AddCommand(login.LoginCmd)
+	RootCmd.AddCommand(logout.LogoutCmd)
+	RootCmd.AddCommand(register.RegisterCmd)
+}
+
 
 var (
 	//go:embed banner.txt
@@ -33,7 +50,7 @@ var RootCmd = &cobra.Command{
 
 		tokens := authentication.GetCurrentAuthentication()
 		if tokens == nil {
-			displayNotLoggedInMessage()
+			messages.DisplayNotLoggedInMessage()
 			return
 		}
 
@@ -48,7 +65,7 @@ var RootCmd = &cobra.Command{
 				}
 
 				if newTokens == nil {
-					displaySessionExpiredMessage()
+					messages.DisplaySessionExpiredMessage()
 					return
 				}
 
@@ -66,16 +83,6 @@ var RootCmd = &cobra.Command{
 		fmt.Println("Welcome", userInfo.Email)
 		fmt.Println("Your balance is", userInfo.Balance)
 	},
-}
-
-func displayNotLoggedInMessage() {
-	fmt.Println("You are not logged in.")
-	fmt.Println("Please log in to continue.")
-}
-
-func displaySessionExpiredMessage() {
-	fmt.Println("Your session has expired and you have been logged out.")
-	fmt.Println("Please log in again to continue.")
 }
 
 func displayUnableToGetUserInfoMessage(err error) {

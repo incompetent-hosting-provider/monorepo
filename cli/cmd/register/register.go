@@ -1,7 +1,6 @@
 package register
 
 import (
-	"cli/cmd"
 	"cli/internal/authentication"
 	"cli/internal/utils"
 	"fmt"
@@ -9,14 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd.RootCmd.AddCommand(registerCmd)
-}
-
 // Register Command
 //
 // Allows the user to register for the IHP CLI using keycloak
-var registerCmd = &cobra.Command{
+var RegisterCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register for the IHP CLI",
 	Long:  "Register for the IHP CLI via keycloak",
