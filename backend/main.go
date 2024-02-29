@@ -12,10 +12,8 @@ import (
 
 func init() {
 	// Load env
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
+	_ = godotenv.Load()
+
 	util.InitLogger()
 }
 
