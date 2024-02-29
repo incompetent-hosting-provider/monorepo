@@ -5,6 +5,7 @@
 **Note**: `docker compose` is an alias for `docker-compose`. Depending on your docker version and/or OS you might have to use the ladder.
 
 To start the local dev setup:
+**Note**: `arm` architecture is currently not supported, due to incompatible dependencies in terraform providers.
 
 ```sh
 docker compose up -d
