@@ -146,9 +146,5 @@ func isConnAvailable() bool {
 	}
 	// If conn is not ready -> try to set it up
 	err := initConnection()
-	if err != nil {
-		return false
-	}
-	return true
-
+	return err == nil
 }
