@@ -4,12 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	"goterra/pkg/helper"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+var lokiClient LokiClient
 
 // Parse CMD flags and configure logger accordingly
 func InitLogger() {
@@ -49,6 +54,25 @@ func InitLogger() {
 
 	log.Debug().Msg("Starting with loglevel debug enabled")
 
+	// Send logs every 10 seconds or if 500 log events have been collected
+	lokiClient = LokiClient{
+		PushIntveralSeconds: 10,
+		MaxBatchSize:        500,
+		LokiEndpoint:        helper.GetStringEnvWithDefault("LOKI_HOST", "http://localhost:3100"),
+		BatchCount:          0,
+		Values:              make(map[string][][]string),
+	}
+
+	go lokiClient.bgRun()
+
 	// Include calling line in code in log
-	log.Logger = log.With().Caller().Logger()
+	log.Logger = log.With().Caller().Logger().Hook(LokiHook{})
+}
+
+type LokiHook struct {
+}
+
+func (h LokiHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
+	lokiClient.Values[level.String()] = append(lokiClient.Values[level.String()], []string{strconv.FormatInt(time.Now().UnixNano(), 10), msg})
+	lokiClient.BatchCount++
 }
