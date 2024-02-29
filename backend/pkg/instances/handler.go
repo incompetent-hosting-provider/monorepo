@@ -143,6 +143,7 @@ func CreatePresetContainerHandler(c *gin.Context) {
 		InstanceStatus:       db_instances.STATUS_VALUE_SCHEDULED,
 		CreatedAt:            time.Now().Format(time.RFC3339),
 		StartedAt:            "N/A",
+		Type:                 db_instances.TYPE_PRESET,
 	})
 
 	if err != nil {

@@ -40,6 +40,7 @@ require (
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/MicahParks/jwkset v0.5.6 // indirect
+	github.com/aws/aws-sdk-go v1.50.28
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.13.6
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.10 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.2 // indirect
