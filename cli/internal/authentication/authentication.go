@@ -91,11 +91,7 @@ func PerformTokenExchange(server *net.TCPListener, result chan<- error) {
 		result <- nil
 	})
 
-	err := http.Serve(server, mux)
-
-	if err != nil {
-		fmt.Printf("Could not start callback server due to an error: %v", err)
-	}
+	_ = http.Serve(server, mux)
 }
 
 // Starts the logout process by listening on the given server
@@ -116,8 +112,5 @@ func PerformLogout(server *net.TCPListener, result chan<- error) {
 		result <- nil
 	})
 
-	err := http.Serve(server, mux)
-	if err != nil {
-		fmt.Printf("Could not start callback server due to an error: %v", err)
-	}
+	_ = http.Serve(server, mux)
 }
