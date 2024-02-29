@@ -14,8 +14,9 @@ func (m *MqHandler) PublishUpdateInstanceStatusEvent(event UpdateInstanceEvent) 
 
 	if err != nil {
 		log.Error().Msgf("Could not publish event to bus due to an error: %v", err)
+		return
 	}
-	m.channel.PublishWithContext(
+	err = m.channel.PublishWithContext(
 		context.Background(),
 		"",
 		"UpdateInstanceQueue",
@@ -26,4 +27,9 @@ func (m *MqHandler) PublishUpdateInstanceStatusEvent(event UpdateInstanceEvent) 
 			Body:        eventMarshalled,
 		},
 	)
+
+	if err != nil {
+		log.Error().Msgf("Could not publish event to bus due to an error: %v", err)
+	}
+
 }

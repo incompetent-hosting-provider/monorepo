@@ -14,7 +14,7 @@ import (
 func TestGetUserInfo_RequestParams(t *testing.T) {
 	// ARRANGE
 	tokens := authentication.SessionTokens{
-		AccessToken: authentication.AccessToken("accessToken"),
+		AccessToken:  authentication.AccessToken("accessToken"),
 		RefreshToken: authentication.RefreshToken("refreshToken"),
 	}
 
@@ -23,7 +23,7 @@ func TestGetUserInfo_RequestParams(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, "/user", r.URL.Path)
 		assert.Equal(t, "GET", r.Method)
-		assert.Equal(t, "Bearer "+ string(tokens.AccessToken), r.Header.Get("Authorization"))
+		assert.Equal(t, "Bearer "+string(tokens.AccessToken), r.Header.Get("Authorization"))
 
 		// RESPOND
 		w.WriteHeader(http.StatusOK)
@@ -32,23 +32,23 @@ func TestGetUserInfo_RequestParams(t *testing.T) {
 
 	testClient := BackendClient{
 		baseURL: server.URL,
-		client: server.Client(),
+		client:  server.Client(),
 	}
 
 	// ACT
-	_, _ =  testClient.GetUserInfo(tokens)
+	_, _ = testClient.GetUserInfo(tokens)
 }
 
 func TestGetUserInfo_Success(t *testing.T) {
 	// ARRANGE
 	tokens := authentication.SessionTokens{
-		AccessToken: authentication.AccessToken("accessToken"),
+		AccessToken:  authentication.AccessToken("accessToken"),
 		RefreshToken: authentication.RefreshToken("refreshToken"),
 	}
 
 	expectedUserInfo := UserInfo{
 		Balance: 100,
-		Email: "john.doe@foobar.de",
+		Email:   "john.doe@foobar.de",
 	}
 
 	// Create a test server to mock the HTTP response
@@ -56,22 +56,22 @@ func TestGetUserInfo_Success(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, "/user", r.URL.Path)
 		assert.Equal(t, "GET", r.Method)
-		assert.Equal(t, "Bearer "+ string(tokens.AccessToken), r.Header.Get("Authorization"))
+		assert.Equal(t, "Bearer "+string(tokens.AccessToken), r.Header.Get("Authorization"))
 
 		// RESPOND
 		w.WriteHeader(http.StatusOK)
 		responseJson, _ := json.Marshal(expectedUserInfo)
-		w.Write(responseJson)
+		_, _ = w.Write(responseJson)
 	}))
 	defer server.Close()
 
 	testClient := BackendClient{
 		baseURL: server.URL,
-		client: server.Client(),
+		client:  server.Client(),
 	}
 
 	// ACT
-	userInfo, err :=  testClient.GetUserInfo(tokens)
+	userInfo, err := testClient.GetUserInfo(tokens)
 
 	// ASSERT
 	assert.NoError(t, err)
@@ -79,41 +79,40 @@ func TestGetUserInfo_Success(t *testing.T) {
 }
 
 func TestGetUserInfo_InternalServerError(t *testing.T) {
-		// ARRANGE
-		tokens := authentication.SessionTokens{
-			AccessToken: authentication.AccessToken("accessToken"),
-			RefreshToken: authentication.RefreshToken("refreshToken"),
-		}
+	// ARRANGE
+	tokens := authentication.SessionTokens{
+		AccessToken:  authentication.AccessToken("accessToken"),
+		RefreshToken: authentication.RefreshToken("refreshToken"),
+	}
 
-		mockErrorResponseCode := http.StatusInternalServerError
-	
-		// Create a test server to mock the HTTP response
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(mockErrorResponseCode)
-		}))
-		defer server.Close()
+	mockErrorResponseCode := http.StatusInternalServerError
 
-		testClient := BackendClient{
-			baseURL: server.URL,
-			client: server.Client(),
-		}
+	// Create a test server to mock the HTTP response
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(mockErrorResponseCode)
+	}))
+	defer server.Close()
 
-		// ACT
-		userInfo, err :=  testClient.GetUserInfo(tokens)
+	testClient := BackendClient{
+		baseURL: server.URL,
+		client:  server.Client(),
+	}
 
-		// ASSERT
-		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), fmt.Sprint(mockErrorResponseCode))
-		}
-	
-		assert.Zero(t, userInfo)
+	// ACT
+	userInfo, err := testClient.GetUserInfo(tokens)
+
+	// ASSERT
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), fmt.Sprint(mockErrorResponseCode))
+	}
+
+	assert.Zero(t, userInfo)
 }
-
 
 func TestGetUserInfo_Unauthenticated(t *testing.T) {
 	// ARRANGE
 	tokens := authentication.SessionTokens{
-		AccessToken: authentication.AccessToken("accessToken"),
+		AccessToken:  authentication.AccessToken("accessToken"),
 		RefreshToken: authentication.RefreshToken("refreshToken"),
 	}
 
@@ -127,7 +126,7 @@ func TestGetUserInfo_Unauthenticated(t *testing.T) {
 
 	testClient := BackendClient{
 		baseURL: server.URL,
-		client: server.Client(),
+		client:  server.Client(),
 	}
 
 	// ACT

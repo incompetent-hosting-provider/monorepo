@@ -21,7 +21,12 @@ func ReadRawEnv(path string, env_class reflect.Type) ([]byte, error) {
 	// Unmarshal the tfenv file
 	// Validate the tfenv file, by checking if the number of keys is the same as the number of keys in the CustomEnv struct
 	var result map[string]interface{}
-	json.Unmarshal([]byte(tf_env_raw), &result)
+	err = json.Unmarshal([]byte(tf_env_raw), &result)
+
+	if err != nil{
+		log.Error().Msgf("Error unmarshaling tfenv file: %s", err)
+		return nil, err
+	}
 
 	refname := env_class.Name()
 	refnum := env_class.NumField()

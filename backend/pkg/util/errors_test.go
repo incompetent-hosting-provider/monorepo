@@ -27,7 +27,7 @@ func TestThrowInternalServerException(t *testing.T) {
 		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
 	}
 	var target map[string]string
-	json.NewDecoder(w.Result().Body).Decode(&target)
+	_ = json.NewDecoder(w.Result().Body).Decode(&target)
 	if target["error"] != err_want {
 		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
 	}
@@ -50,7 +50,7 @@ func TestThrowUnauthorizedException(t *testing.T) {
 		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
 	}
 	var target map[string]string
-	json.NewDecoder(w.Result().Body).Decode(&target)
+	_ = json.NewDecoder(w.Result().Body).Decode(&target)
 	if target["error"] != err_want {
 		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
 	}
@@ -73,7 +73,7 @@ func TestThrowNotFoundException(t *testing.T) {
 		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
 	}
 	var target map[string]string
-	json.NewDecoder(w.Result().Body).Decode(&target)
+	_ = json.NewDecoder(w.Result().Body).Decode(&target)
 	if target["error"] != err_want {
 		t.Fatalf(`Want %d, received %d`, code_want, w.Code)
 	}

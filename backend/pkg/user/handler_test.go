@@ -37,7 +37,7 @@ func TestUserFetchHandlerAllHeadersPresent(t *testing.T) {
 	user.UserFetchHandler(c)
 	// Assert
 	var response userResponse
-	json.NewDecoder(w.Result().Body).Decode(&response)
+	_ = json.NewDecoder(w.Result().Body).Decode(&response)
 
 	fmt.Printf("%v", response)
 

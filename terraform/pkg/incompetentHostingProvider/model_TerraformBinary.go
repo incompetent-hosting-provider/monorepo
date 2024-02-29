@@ -77,7 +77,10 @@ func (i *TerraformBinary) ApplyTerraform(containerToCreate []DockerMySQL, contai
 	}
 
 	for _, container := range containerToCreate {
-		ihpenv.AddMySqlContainer(container.GetUid(), 0, container.GetMySqlRootPassword())
+		err := ihpenv.AddMySqlContainer(container.GetUid(), 0, container.GetMySqlRootPassword())
+		if err != nil{
+			return nil, err
+		}
 		ihpcredsenv.AddMysqlRootPassword(container.GetMySqlRootPassword())
 
 		err = WriteCustomEnv(ihpenv_path, ihpenv)

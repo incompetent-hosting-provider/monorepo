@@ -18,7 +18,7 @@ func (q *mqWrapper) runHandler() {
 		select {
 		case event := <-q.CustomContainerStartEventChannel:
 			eventBody, _ := serializeEvent[CustomContainerStartEvent](event)
-			q.mqChann.PublishWithContext(
+			err := q.mqChann.PublishWithContext(
 				context.Background(),
 				"",
 				q.customContainerEventQueue.Name,
@@ -29,9 +29,12 @@ func (q *mqWrapper) runHandler() {
 					Body:        eventBody,
 				},
 			)
+			if err != nil {
+				log.Warn().Msgf("Could not send message due to an error: %v", err)
+			}
 		case event := <-q.PresetContainerStartEventChannel:
 			eventBody, _ := serializeEvent[PresetContainerStartEvent](event)
-			q.mqChann.PublishWithContext(
+			err := q.mqChann.PublishWithContext(
 				context.Background(),
 				"",
 				q.prestContainerEventQueue.Name,
@@ -42,9 +45,12 @@ func (q *mqWrapper) runHandler() {
 					Body:        eventBody,
 				},
 			)
+			if err != nil {
+				log.Warn().Msgf("Could not send message due to an error: %v", err)
+			}
 		case event := <-q.DeleteContainerEventChannel:
 			eventBody, _ := serializeEvent[DeleteContainerEvent](event)
-			q.mqChann.PublishWithContext(
+			err := q.mqChann.PublishWithContext(
 				context.Background(),
 				"",
 				q.stopContainerEventQueue.Name,
@@ -55,6 +61,9 @@ func (q *mqWrapper) runHandler() {
 					Body:        eventBody,
 				},
 			)
+			if err != nil {
+				log.Warn().Msgf("Could not send message due to an error: %v", err)
+			}
 		case event := <-q.updateInstanceEventChannel:
 			log.Debug().Msg("Received update event")
 			parsedEvent, err := unserializeEvent(event.Body)

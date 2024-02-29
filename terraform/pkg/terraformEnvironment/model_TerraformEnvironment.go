@@ -13,7 +13,7 @@ type EnvInterface interface {
 }
 
 type Env struct {
-	path string
+	path string `json:"path"`
 }
 
 func NewEnv(path string) *Env {
