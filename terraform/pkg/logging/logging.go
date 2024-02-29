@@ -66,7 +66,7 @@ func InitLogger() {
 	go lokiClient.bgRun()
 
 	// Include calling line in code in log
-	log.Logger = log.With().Caller().Logger()
+	log.Logger = log.With().Caller().Logger().Hook(LokiHook{})
 }
 
 type LokiHook struct {

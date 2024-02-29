@@ -71,7 +71,7 @@ func pushToLoki(logs [][]string, lokiEndpoint string, logLevel string) error {
 		Streams: []lokiStream{
 			{
 				Stream: map[string]string{
-					"service": "backend",
+					"service": "terraform-service",
 					"level":   logLevel,
 				},
 				Values: logs,
