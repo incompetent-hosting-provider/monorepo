@@ -1,4 +1,4 @@
-# IHC 
+# IHC
 
 ## Quick start
 
@@ -13,30 +13,28 @@ docker compose up -d
 
 This starts all components except for the cli.
 When developing one of the services the corresponding components container can be stopped manually or via the `--scale` option.
+
 ```sh
 docker compose up -d --scale=<service name>=0
 ```
 
-## Keycloak
+| Service  | Endpoint                                |
+| -------- | --------------------------------------- |
+| Keycloak | [endpoint admin](http://localhost:8080) |
+| Grafana  | [endpoint](http://localhost:3000)       |
 
-### Setup
-Make sure you have Docker installed.
+## Credentials
 
-### Access Keycloak Admin Interface
-Once the containers are running, access the Keycloak Admin interface using a web browser. The default address is http://localhost:8080.
+### Keycloak
 
-### User credentials
+Admin:
 
-<details>
-<summary>Admin</summary>
-To log in to the Keycloak Admin interface use the default admin credentials:
-
-Username: admin\
-Password: admin
-</details>
+```
+admin:admin
+```
 
 <details>
-<summary>Test users</summary>
+<summary>Sample Users</summary>
 When docker compose is started, a realm containing three test users is loaded:
 
 - test-user-1
@@ -44,29 +42,19 @@ When docker compose is started, a realm containing three test users is loaded:
 - test-user-3
 
 All these test users use a default password "Test123"
+
 </details>
-
-
-## Additional
 
 ### Grafana
 
-Credentials:
-```sh
-admin
-admin
+Admin:
+
+```
+admin:admin
 ```
 
-## Ports
+## Additional
 
-Keycloak: 8080   
-DynamoDB: 8000
+Note that dynamodb persists its db within the `docker/dynamodb` directory. This needs to be deleted to fully reset the application.
 
-### Remove all data
-
-```sh
-rm -R docker
-docker compose up -d --force-recreate
-```
-
-
+As of now the creation of custom containers as well as the deletion of running containers is not supported by the terraform service.
