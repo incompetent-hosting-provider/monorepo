@@ -33,7 +33,7 @@ func TestUserFetchHandlerAllHeadersPresent(t *testing.T) {
 	user.UserFetchHandler(c)
 	// Assert
 	var response payment.BalanceResponse
-	json.NewDecoder(w.Result().Body).Decode(&response)
+	_ = json.NewDecoder(w.Result().Body).Decode(&response)
 
 	fmt.Printf("%v", response)
 

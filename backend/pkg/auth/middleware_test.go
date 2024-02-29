@@ -29,7 +29,7 @@ func getExampleEngine(raw *rsa.PrivateKey) (*gin.Engine, jwk.Key) {
 
 	key, _ := jwk.FromRaw(raw)
 
-	key.Set(jwk.KeyIDKey, keyId)
+	_ = key.Set(jwk.KeyIDKey, keyId)
 
 	buf, err := json.MarshalIndent(key, "", "  ")
 

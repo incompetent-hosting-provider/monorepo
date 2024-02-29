@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  release:
+    types: [ created ]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish_backend:
+    runs-on: "ubuntu-latest"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and publish backend
+        uses: macbre/push-to-ghcr@master
+        with:
+          context: ./backend/
+          dockerfile: ./backend/Dockerfile
+          image_name: incompetent-hosting-provider/ihp-backend
+          github_token: ${{ secrets.GH_API_TOKEN_GHPR }}
+
+  publish_cli:
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        os: [linux, windows, macos]
+        arch: [amd64, 386]
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: wangyoucao577/go-release-action@v1
+        with:
+          binary_name: ihp-cli
+          project_path: ./cli/
+          github_token: ${{ secrets.GH_API_TOKEN_GHPR }}
+          goos: ${{ matrix.os }}
+          goarch: ${{ matrix.arch }}

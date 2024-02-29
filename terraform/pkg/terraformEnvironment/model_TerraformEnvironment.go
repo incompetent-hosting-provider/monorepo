@@ -13,17 +13,17 @@ type EnvInterface interface {
 }
 
 type Env struct {
-	path string
+	Path string `json:"path"`
 }
 
 func NewEnv(path string) *Env {
 	return &Env{
-		path: path,
+		Path: path,
 	}
 }
 
 func (e *Env) ReadEnv() (Env, error) {
-	tf_env_raw, err := ReadRawEnv(e.path, reflect.TypeOf(Env{}))
+	tf_env_raw, err := ReadRawEnv(e.Path, reflect.TypeOf(Env{}))
 	if err != nil {
 		return Env{}, err
 	}
@@ -40,7 +40,7 @@ func (e *Env) ReadEnv() (Env, error) {
 }
 
 func (e *Env) WriteEnv(tf_env Env) error {
-	err := WriteRawEnv(e.path, tf_env)
+	err := WriteRawEnv(e.Path, tf_env)
 	if err != nil {
 		return err
 	}

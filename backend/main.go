@@ -10,18 +10,21 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func init(){
+func init() {
 	// Load env
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
 	util.InitLogger()
 }
 
 // Swagger definitions
 
-//	@securityDefinitions.apikey BearerAuth
-//	@in							header
-//	@name						Authorization
-//	@description				Auth token security
+// @securityDefinitions.apikey BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Auth token security
 func main() {
 	err := db.InitDbConn()
 	if err != nil {
@@ -32,8 +35,14 @@ func main() {
 	log.Info().Msg("Starting Webserver...")
 	ginEngine := endpoints.ConfigureEndpoints()
 	// Dont trust any proxies MIGHT not be what we need for deployment
-	ginEngine.SetTrustedProxies(nil)
+	err = ginEngine.SetTrustedProxies(nil)
+	if err != nil {
+		log.Fatal().Msgf("Could not add trusted proxies due to an error: %v", err)
+	}
 	port := util.GetStringEnvWithDefault("PORT", "8081")
 	log.Info().Msgf("Starting on port: %s", port)
-	ginEngine.Run(fmt.Sprintf(":%s", port))
+	err = ginEngine.Run(fmt.Sprintf(":%s", port))
+	if err != nil {
+		panic(err)
+	}
 }

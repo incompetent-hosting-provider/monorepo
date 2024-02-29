@@ -16,7 +16,7 @@ func GetCurrentAuthentication() *SessionTokens {
 	if err != nil {
 		// Unable to read tokens, clear them and
 		// assume that the user was not logged in.
-		clearTokens()
+		_ = clearTokens()
 		return nil
 	}
 
@@ -41,7 +41,7 @@ func RefreshTokens() (*SessionTokens, error) {
 	// it means that the refresh token has expired.
 	// In this case, we should clear the tokens and return nil.
 	if newTokens == nil {
-		clearTokens()
+		_ = clearTokens()
 		return nil, nil
 	}
 
@@ -91,7 +91,7 @@ func PerformTokenExchange(server *net.TCPListener, result chan<- error) {
 		result <- nil
 	})
 
-	http.Serve(server, mux)
+	_ = http.Serve(server, mux)
 }
 
 // Starts the logout process by listening on the given server
@@ -112,5 +112,5 @@ func PerformLogout(server *net.TCPListener, result chan<- error) {
 		result <- nil
 	})
 
-	http.Serve(server, mux)
+	_ = http.Serve(server, mux)
 }

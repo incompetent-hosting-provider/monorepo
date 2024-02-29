@@ -17,6 +17,9 @@ on:
       - cli/go.mod
       - .github/workflows/**
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -33,7 +36,29 @@ jobs:
           go-version: '1.21.4' 
 
       - name: run tests
-        run: go test ./... 
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+  
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: incompetent-hosting-provider/monorepo
+
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: v1.54
+          working-directory: cli/
+          args: --timeout=5m --new-from-rev=HEAD~2
 
   build:
     needs:
@@ -55,7 +80,6 @@ jobs:
           go-version: '1.21.4' 
       
       - name: build
-        # verbose build
         run: go build -x -v 
 
       - uses: actions/upload-artifact@v4

@@ -160,8 +160,4 @@ func main() {
 		// _, err = ihpTfBin.ApplyTerraform([]ihp.DockerMySQL{}, []ihp.DockerMySQL{})
 		// helper.HandleError(err, "Error applying terraform")
 	*/
-
-	// Exit main, this will never be reached. This is just to make the linter happy
-	log.Info().Msg("Exiting GoTerra")
-	os.Exit(0)
 }

@@ -35,7 +35,7 @@ func (l *LokiClient) bgRun() {
 	for {
 		if time.Now().Second()-lastRunTimestamp > l.PushIntveralSeconds || l.BatchCount > l.MaxBatchSize {
 			// Loop over all log levels and send them
-			for k, _ := range l.Values {
+			for k := range l.Values {
 				if len(l.Values) > 0 {
 					prevLogs := l.Values[k]
 					l.Values[k] = [][]string{}
@@ -89,7 +89,9 @@ func pushToLoki(logs [][]string, lokiEndpoint string, logLevel string) error {
 		return err
 	}
 
-	ctx, _ := context.WithTimeout(req.Context(), 100*time.Millisecond)
+	ctx, cancel := context.WithTimeout(req.Context(), 100*time.Millisecond)
+
+	defer cancel()
 
 	req = req.WithContext(ctx)
 
