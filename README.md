@@ -1,4 +1,4 @@
-# IHC
+# IHP
 
 ## Quick start
 
