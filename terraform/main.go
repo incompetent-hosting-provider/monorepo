@@ -37,6 +37,8 @@ func listenForEvents(mq *mqhandler.MqHandler, mq_preset_container_events *[]mqha
 			// TODO: do something with this
 			log.Debug().Msgf("Received custom start event: %v", event)
 			log.Warn().Msg("CustomContainerStartEventChannel not implemented")
+			updateEvent := mqhandler.UpdateInstanceEvent{UserId: event.UserId , ContainerUUID: event.ContainerUUID, NewStatus: "Running"}
+			mq.PublishUpdateInstanceStatusEvent(updateEvent)
 		case event := <-mq.PresetContainerStartEventChannel:
 			event_sanitized := event
 			event_sanitized.ContainerEnv = map[string]string{"<redacted>": "<redacted>"} // Redact sensitive data
@@ -46,6 +48,8 @@ func listenForEvents(mq *mqhandler.MqHandler, mq_preset_container_events *[]mqha
 			// TODO: do something with this
 			log.Debug().Msgf("Received delete event: %v", event)
 			log.Warn().Msg("DestroyContainerEventChannel not implemented")
+			updateEvent := mqhandler.UpdateInstanceEvent{UserId: event.UserId , ContainerUUID: event.ContainerUUID, NewStatus: "Deleted"}
+			mq.PublishUpdateInstanceStatusEvent(updateEvent)
 		}
 	}
 }
@@ -94,7 +98,8 @@ func main() {
 				} else {
 					log.Info().Msgf("Added MySQL container with UID %s", uidsToAdd[i])
 					// Send update event
-					event := mqhandler.UpdateInstanceEvent{UserId: uidsToAdd[i], ContainerUUID: "mysql", NewStatus: "created"}
+					// Get userid and containeruuid from uid by relying on the length of uuids (36)
+					event := mqhandler.UpdateInstanceEvent{UserId: uidsToAdd[i][:36], ContainerUUID: uidsToAdd[i][36:], NewStatus: "Running"}
 					log.Debug().Msgf("Sending update event: %v", event)
 					mq.PublishUpdateInstanceStatusEvent(event)
 				}

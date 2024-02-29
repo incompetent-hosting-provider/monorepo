@@ -197,6 +197,29 @@ func GetInstanceById(userSub string, containerUUID string) (InstancesTable, erro
 	return parsedInstance, err
 }
 
+func UpdateInstanceStatus(userSub string, containerUUID string, newStatus string) error {
+	if util.IsTestRun() {
+		return nil
+	}
+
+	conn := db.GetDynamoConn()
+
+	params := dynamodb.UpdateItemInput{
+		TableName: aws.String(TABLE_NAME),
+		Key: map[string]types.AttributeValue{
+			"instanceid": &types.AttributeValueMemberS{Value: getInstanceId(userSub, containerUUID)},
+		},
+		UpdateExpression: aws.String("SET instancestatus = :newStatus"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":newStatus": &types.AttributeValueMemberS{Value: newStatus},
+		},
+	}
+
+	_, err := conn.UpdateItem(context.TODO(), &params)
+
+	return err
+}
+
 func DeleteInstanceById(userSub string, containerUUID string) error {
 
 	if util.IsTestRun() {

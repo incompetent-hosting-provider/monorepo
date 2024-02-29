@@ -3,6 +3,7 @@ package mq_handler
 import (
 	"encoding/json"
 
+	"github.com/rabbitmq/amqp091-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -36,8 +37,21 @@ type mqWrapper struct {
 	CustomContainerStartEventChannel chan CustomContainerStartEvent
 	PresetContainerStartEventChannel chan PresetContainerStartEvent
 	DeleteContainerEventChannel      chan DeleteContainerEvent
+	updateInstanceEventChannel       <-chan amqp091.Delivery
+}
+
+type UpdateInstanceEvent struct {
+	ContainerUUID string
+	UserId        string
+	NewStatus     string
 }
 
 func serializeEvent[T CustomContainerStartEvent | PresetContainerStartEvent | DeleteContainerEvent](input T) ([]byte, error) {
 	return json.Marshal(input)
+}
+
+func unserializeEvent(input []byte) (UpdateInstanceEvent, error) {
+	var output UpdateInstanceEvent
+	err := json.Unmarshal(input, &output)
+	return output, err
 }
