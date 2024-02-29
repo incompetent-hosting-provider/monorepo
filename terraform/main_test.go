@@ -46,10 +46,10 @@ func TestRunMainReadWriteEnv(t *testing.T) {
 func TestRunMainAddRemoveContainers(t *testing.T) {
 	ihpTfBin := ihp.NewTfBin(tf_bin_dir, tf_version, tf_cwd_dir, tf_envs_names)
 
-	uids := []int{}
+	uids := []string{}
 	s := "test"
 	for i := range s {
-		uids = append(uids, int(s[i]))
+		uids = append(uids, string(s[i]))
 	}
 
 	passwords := []string{}
