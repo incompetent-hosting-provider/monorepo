@@ -20,4 +20,7 @@ COPY --from=BUILD /build/ihp-terraform /app/ihp-terraform
 # Copy TerraDocker
 COPY ./TerraDocker /app/TerraDocker
 
+# Add volume for Terraform files
+VOLUME /app/TerraDocker
+
 CMD ["/app/ihp-terraform"]
